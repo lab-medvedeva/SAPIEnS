@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
-from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR, ReduceLROnPlateau
+from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR, ReduceLROnPlateau, StepLR
 
 import time
 import math
@@ -118,7 +118,8 @@ class VAE(nn.Module):
             verbose=True,
             name='',
             patience=10,
-            outdir='./'
+            outdir='./',
+            plot_iterations=1000
        ):
 
         self.to(device)
@@ -126,7 +127,9 @@ class VAE(nn.Module):
         Beta = DeterministicWarmup(n=n, t_max=beta)
         
         iteration = 0
-        early_stopping = EarlyStopping(patience=patience, outdir=outdir)
+        max_iter = max_iter
+        scheduler = StepLR(optimizer, step_size=10000, gamma=0.5)
+        #early_stopping = EarlyStopping(patience=patience, outdir=outdir)
         with trange(max_iter, disable=verbose) as pbar:
             while True: 
                 epoch_loss = 0
@@ -146,16 +149,20 @@ class VAE(nn.Module):
                             loss, recon_loss/len(x), kl_loss/len(x)))
                     pbar.update(1)
                     
+                    scheduler.step()
                     iteration+=1
                     if iteration >= max_iter:
                         break
+                    if iteration % plot_iterations == plot_iterations - 1:
+                        yield iteration
                 else:
-                    early_stopping(epoch_loss, self)
-                    if early_stopping.early_stop:
-                        print('EarlyStopping: run {} iteration'.format(iteration))
-                        break
+                    #early_stopping(epoch_loss, self)
+                    #if early_stopping.early_stop:
+                    #    print('EarlyStopping: run {} iteration'.format(iteration))
+                    #    break
                     continue
                 break
+        return max_iter
 
     def encodeBatch(self, dataloader, device='cpu', out='z', transforms=None):
         output = []

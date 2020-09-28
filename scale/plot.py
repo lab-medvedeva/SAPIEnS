@@ -11,7 +11,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('agg')
+# matplotlib.use('agg')
 from matplotlib import pyplot as plt
 import seaborn as sns
 # import os
@@ -205,7 +205,7 @@ def plot_embedding(X, labels, classes=None, method='tSNE', cmap='tab20', figsize
     plt.figure(figsize=figsize)
     if classes is None:
         classes = np.unique(labels)
-
+    print(classes)
     if cmap is not None:
         cmap = cmap
     elif len(classes) <= 10:

@@ -93,7 +93,7 @@ def load_data(path, transpose=False):
         count, peaks, barcode = read_csv(path)
     else:
         raise ValueError("File {} not exists".format(path))
-        
+    print(count.shape) 
     if transpose: 
         count = count.transpose()
     print('Original data contains {} cells x {} peaks'.format(*count.shape))
@@ -122,7 +122,13 @@ def read_csv(path):
         sep = ','
     else:
         raise ValueError("File {} not in format txt or csv".format(path))
-    data = pd.read_csv(path, sep=sep, index_col=0).T.astype('float32')
-    genes = data.columns.values
-    barcode = data.index.values
+    if 'txt' in path:
+        data = pd.read_csv(path, sep=sep, index_col=0).T.astype('float32')
+        genes = data.columns.values
+        barcode = data.index.values
+    elif 'csv' in path:
+        data = pd.read_csv(path, sep=sep, index_col=0)
+        data = data.T.astype('float32')
+        genes = data.columns.values
+        barcode = data.index.values
     return scipy.sparse.csr_matrix(data.values), genes, barcode

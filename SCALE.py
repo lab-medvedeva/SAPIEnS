@@ -43,11 +43,11 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', '-b', type=int, default=32, help='Batch size')
     parser.add_argument('--gpu', '-g', default=0, type=int, help='Select gpu device number when training')
     parser.add_argument('--seed', type=int, default=18, help='Random seed for repeat results')
-    parser.add_argument('--encode_dim', type=int, nargs='*', default=[1024, 128], help='encoder structure')
+    parser.add_argument('--encode_dim', type=int, nargs='*', default=[6400, 2400, 1200, 400], help='encoder structure')
     parser.add_argument('--decode_dim', type=int, nargs='*', default=[], help='encoder structure')
     parser.add_argument('--latent', '-l',type=int, default=10, help='latent layer dim')
-    parser.add_argument('--low', '-x', type=float, default=0.01, help='Remove low ratio peaks')
-    parser.add_argument('--high', type=float, default=0.9, help='Remove high ratio peaks')
+    parser.add_argument('--low', '-x', type=float, default=0.001, help='Remove low ratio peaks')
+    parser.add_argument('--high', type=float, default=0.99, help='Remove high ratio peaks')
     parser.add_argument('--min_peaks', type=float, default=100, help='Remove low quality cells with few peaks')
     parser.add_argument('--log_transform', action='store_true', help='Perform log2(x+1) transform')
     parser.add_argument('--max_iter', '-i', type=int, default=30000, help='Max iteration')
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     parser.add_argument('--emb', type=str, default='UMAP')
     parser.add_argument('--reference', '-r', default=None, type=str, help='Reference celltypes')
     parser.add_argument('--transpose', '-t', action='store_true', help='Transpose the input matrix')
-
+    parser.add_argument('--impute_iteration', type=int, default=10000, help='Impute iteration save')
     args = parser.parse_args()
 
     # Set random seed
@@ -110,7 +110,10 @@ if __name__ == '__main__':
     if not args.pretrain:
         print('\n## Training Model ##')
         model.init_gmm_params(testloader)
-        model.fit(trainloader,
+        ref = pd.read_csv(args.reference, sep=',', index_col='cell_id')['cell_types']
+        labels = ref.reindex(dataset.barcode, fill_value='unknown')
+
+        for iteration in model.fit(trainloader,
                   lr=lr, 
                   weight_decay=args.weight_decay,
                   verbose=args.verbose,
@@ -118,7 +121,19 @@ if __name__ == '__main__':
                   max_iter=args.max_iter,
                   name=name,
                   outdir=outdir
-                   )
+                  ):
+            feature = model.encodeBatch(testloader, device=device, out='z')
+            plot_embedding(
+                feature, labels,
+                method=args.emb, 
+                save=os.path.join(outdir, f'emb_{args.emb}_{iteration}.pdf'),
+                save_emb=os.path.join(outdir, f'emb_{args.emb}_{iteration}.txt')
+            )
+            print(iteration, iteration + 1 % args.impute_iteration)
+            if (iteration + 1) % args.impute_iteration == 0:
+                recon_x = model.encodeBatch(testloader, device, out='x', transforms=[normalizer.inverse_transform])
+                recon_x = pd.DataFrame(recon_x.T, index=dataset.peaks, columns=dataset.barcode)
+                recon_x.to_csv(os.path.join(outdir, f'imputed_data_{iteration}.txt'), sep='\t')
 #         torch.save(model.to('cpu').state_dict(), os.path.join(outdir, 'model.pt')) # save model
     else:
         print('\n## Loading Model: {}\n'.format(args.pretrain))
@@ -157,12 +172,12 @@ if __name__ == '__main__':
 #     if not args.no_tsne:
     print("Plotting embedding")
     if args.reference:
-        ref = pd.read_csv(args.reference, sep='\t', header=None, index_col=0)[1]
+        ref = pd.read_csv(args.reference, sep=',', index_col='cell_id')['cell_types']
         labels = ref.reindex(dataset.barcode, fill_value='unknown')
     else:
         labels = pred
-    plot_embedding(feature, labels, emb=args.emb, 
-                   save=os.path.join(outdir, 'emb_{}.pdf'.format(args.emb)), save=os.path.join(outdir, 'emb_{}.txt'.format(args.emb)))
+    plot_embedding(feature, labels, method=args.emb, 
+                   save=os.path.join(outdir, 'emb_{}.pdf'.format(args.emb)), save_emb=os.path.join(outdir, 'emb_{}.txt'.format(args.emb)))
 #         plot_embedding(feature, labels, 
 #                        save=os.path.join(outdir, 'tsne.pdf'), save_emb=os.path.join(outdir, 'tsne.txt'))
         
