@@ -14,6 +14,17 @@ Running SCALE on CUDA is recommended if available.
     
 Installation only requires a few minutes.  
 
+## Running pipeline
+
+```
+./run_pipeline.sh \
+	--dump_folder cicero_test_pipeline \
+	--peak_file count_matrix_data/GSE96769_PeakFile.csv \
+	--count_matrix count_matrix_data/GSE96769_scATACseq_matrix.csv \
+	--cicero_threshold 0.6 \
+	--cell_names count_matrix_data/GSE96769_cell_names_matrix.csv \
+	--scale_output cicero_test_pipeline/scale_result
+```
 ## Quick Start
 
 #### Input
@@ -100,3 +111,4 @@ Download all the **provided datasets** [[Download]](https://cloud.tsinghua.edu.c
 
 ## Reference
 [Lei Xiong, Kui Xu, Kang Tian, Yanqiu Shao, Lei Tang, Ge Gao, Michael Zhang, Tao Jiang & Qiangfeng Cliff Zhang. SCALE method for single-cell ATAC-seq analysis via latent feature extraction. Nature Communications, (2019).](https://www.nature.com/articles/s41467-019-12630-7)
+./run_pipeline.sh --dump_folder cicero_test_pipeline --peak_file count_matrix_data/GSE96769_PeakFile.csv --count_matrix count_matrix_data/GSE96769_scATACseq_matrix.csv --cicero_threshold 0.6 --cell_names count_matrix_data/GSE96769_cell_names_matrix.csv --scale_output cicero_test_pipeline/scale_result
