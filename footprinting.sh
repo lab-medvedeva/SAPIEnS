@@ -1,37 +1,97 @@
-DUMP_FOLDER=cicero_data
+#!/bin/bash
+
+HELP=""
+
+while [[ $# -gt 0 ]]
+do
+    key=$1
+    echo $key
+    case $key in
+        -d|--dump_folder)
+            DUMP_FOLDER=$2
+            shift 2
+            ;;
+        -p|--peak_file)
+            PEAK_FILE=$2
+            shift 2
+            ;;
+        -c|--count_matrix)
+            COUNT_MATRIX=$2
+            shift 2
+            ;;
+        --cell_names)
+            CELL_NAMES=$2
+            shift 2
+            ;;
+        -out|--scale_output)
+            SCALE_OUTPUT=$2
+            shift 2
+            ;;
+        -it|--iteration)
+            NUM_ITERATION=$2
+            shift 2
+            ;;
+        -type1|--cell_type_1)
+            CELL_TYPE_1=$2
+            shift 2
+            ;;
+        -type2|--cell_type_2)
+            CELL_TYPE_2=$2
+            shift 2
+            ;;
+        --sra)
+            SRA=$2
+            shift 2
+            ;;
+        -b|--bams)
+            BAMS=$2
+            shift 2
+            ;;
+        -h|--help)
+            HELP=1
+            shift 2
+            ;;
+    esac
+done
+
+
+if [ ! -d ${DUMP_FOLDER} ]
+then
+    echo "${DUMP_FOLDER} does not exist. Run pipeline before"
+    exit 
+fi
+
 FOOTPRINTS_FOLDER=${DUMP_FOLDER}/found_footprints
 mkdir -p ${FOOTPRINTS_FOLDER}
 
 BAMS_FOLDER=${DUMP_FOLDER}/bams
 mkdir -p ${BAMS_FOLDER}
 
-CELL_TYPE_1=$1
-CELL_TYPE_2=$2
+echo $RGTDATA
 
-NUM_ITERATION=$3
 python post_filtering_peaks.py \
-    --imputed_data results/cicero_test/imputed_data_${NUM_ITERATION}.txt \
-    --cell_names count_matrix_data/GSE96769_cell_names_matrix.csv \
-    --peak_names count_matrix_data/GSE96769_PeakFile.csv \
+    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}.txt \
+    --cell_names ${CELL_NAMES} \
+    --peak_names ${PEAK_FILE} \
     --cell_type ${CELL_TYPE_1} \
     --output_path ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed
 
 python post_filtering_peaks.py \
-    --imputed_data results/cicero_test/imputed_data_${NUM_ITERATION}.txt \
-    --cell_names count_matrix_data/GSE96769_cell_names_matrix.csv \
-    --peak_names count_matrix_data/GSE96769_PeakFile.csv \
+    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}.txt \
+    --cell_names ${CELL_NAMES} \
+    --peak_names ${PEAK_FILE} \
     --cell_type ${CELL_TYPE_2} \
     --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
 
 echo "Concatenating BAMs"
-python concatenate_bams.py --sra /home/akhtyamovpavel/Downloads/SraRunTable\ \(1\).txt \
+python concatenate_bams.py --sra "${SRA}" \
     --cell_type ${CELL_TYPE_1} \
-    --input_folder /home/akhtyamovpavel/Science/BioInfo/data/sra_bam_cleaned_shifted \
+    --input_folder ${BAMS} \
     --output_folder ${BAMS_FOLDER}
 
-python concatenate_bams.py --sra /home/akhtyamovpavel/Downloads/SraRunTable\ \(1\).txt \
+python concatenate_bams.py --sra "${SRA}" \
     --cell_type ${CELL_TYPE_2} \
-    --input_folder /home/akhtyamovpavel/Science/BioInfo/data/sra_bam_cleaned_shifted \
+    --input_folder ${BAMS} \
     --output_folder ${BAMS_FOLDER}
 
 echo "Footprinting"
@@ -45,11 +105,11 @@ rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
 
 echo "Motif Matching"
 rgt-motifanalysis matching --organism=hg38 \
-    --motif-dbs ~/Datasets/BioInfo/RgtData/motifs/hocomoco --filter "name:HUMAN" \
+    --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
     --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}.bed
 
 rgt-motifanalysis matching --organism=hg38 \
-    --motif-dbs ~/Datasets/BioInfo/RgtData/motifs/hocomoco --filter "name:HUMAN" \
+    --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
     --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}.bed
 
 echo "Differential Footprinting"

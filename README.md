@@ -25,6 +25,21 @@ Installation only requires a few minutes.
 	--cell_names count_matrix_data/GSE96769_cell_names_matrix.csv \
 	--scale_output cicero_test_pipeline/scale_result
 ```
+
+## Running footprinting
+```
+./footprinting.sh \
+	--dump_folder cicero_test_pipeline \
+	--peak_file count_matrix_data/GSE96769_PeakFile.csv \
+	--count_matrix count_matrix_data/GSE96769_scATACseq_matrix.csv \
+	--cell_names count_matrix_data/GSE96769_cell_names_matrix.csv \
+    --scale_output  results/cicero_test \
+    --iteration 14999 \
+    --cell_type_1 HSC \
+    --cell_type_2 CLP \
+    --sra ~/Downloads/SraRunTable\ \(1\).txt \
+    --bams ~/Science/BioInfo/data/sra_bam_cleaned_shifted
+```
 ## Quick Start
 
 #### Input
