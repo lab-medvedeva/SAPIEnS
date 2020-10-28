@@ -8,6 +8,7 @@ def parse_args():
     parser.add_argument('--cell_names', help='Path to cell names file')
     parser.add_argument('--cell_type', help='Type of cell to filter')
     parser.add_argument('--output_path', help='Path to output peaks')
+    parser.add_argument('--pipeline', choices=['default', 'atlas'])
     return parser.parse_args()
 
 
@@ -16,7 +17,12 @@ def main():
     
     imputed_data = pd.read_csv(args.imputed_data, sep='\t', index_col=0).T
     print(imputed_data.index)
-    cells = pd.read_csv(args.cell_names, index_col=1)
+
+    if args.pipeline == 'default':
+        cells = pd.read_csv(args.cell_names, index_col=1)
+    else:
+        cells = pd.read_csv(args.cell_names, sep='\t', header=None, index_col=0)
+        cells.columns = ['cell_types']
 
     peaks = pd.read_csv(args.peak_names).set_index('PeakFile_Peak_ID')
 
