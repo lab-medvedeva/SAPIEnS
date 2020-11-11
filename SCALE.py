@@ -30,6 +30,7 @@ from scale.plot import plot_embedding
 from sklearn.preprocessing import MaxAbsScaler
 from torch.utils.data import DataLoader
 
+import gc
 
 if __name__ == '__main__':
 
@@ -62,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('--reference', '-r', default=None, type=str, help='Reference celltypes')
     parser.add_argument('--transpose', '-t', action='store_true', help='Transpose the input matrix')
     parser.add_argument('--impute_iteration', type=int, default=10000, help='Impute iteration save')
+    parser.add_argument('--reference_type', choices=['default', 'atlas'], help='Type of pipeline', required=True)
     args = parser.parse_args()
 
     # Set random seed
@@ -113,10 +115,12 @@ if __name__ == '__main__':
     if not args.pretrain:
         print('\n## Training Model ##')
         model.init_gmm_params(testloader)
-        #ref = pd.read_csv(args.reference, sep=',', index_col='cell_id')['cell_types']
-        ref = pd.read_csv(args.reference, sep='\t', header=None, index_col=0)
-        ref_cells = ref[1]
-        ref_peaks = ref.index
+        if args.reference_type == 'default':
+            ref_cells = pd.read_csv(args.reference, sep=',', index_col='cell_id')['cell_types']
+        else:
+            ref = pd.read_csv(args.reference, sep='\t', header=None, index_col=0)
+            ref_cells = ref[1]
+            ref_peaks = ref.index
         labels = ref_cells.reindex(dataset.barcode, fill_value='unknown')
         cell_types = ref_cells.unique()
         print(labels.head())
@@ -130,11 +134,11 @@ if __name__ == '__main__':
                   outdir=outdir
                   ):
             feature = model.encodeBatch(testloader, device=device, out='z')
-            labels_filtered = labels[labels != 'Unknown']
-            feature_filtered = feature[labels != 'Unknown']
+            # labels_filtered = labels[labels != 'Unknown']
+            # feature_filtered = feature[labels != 'Unknown']
             try:
                 plot_embedding(
-                    feature_filtered, labels_filtered,
+                    feature, labels,
                     method=args.emb, 
                     save=os.path.join(outdir, f'emb_{args.emb}_{iteration}.pdf'),
                     save_emb=os.path.join(outdir, f'emb_{args.emb}_{iteration}.txt')
@@ -143,6 +147,7 @@ if __name__ == '__main__':
                 print('Value contains NaNs')
 
             print(iteration, iteration + 1 % args.impute_iteration)
+            
             if (iteration + 1) % args.impute_iteration == 0:
                 recon_x = model.encodeBatch(testloader, device, out='x', transforms=[normalizer.inverse_transform])
                 imputed_data = recon_x.T
@@ -151,7 +156,11 @@ if __name__ == '__main__':
                 second_condition = imputed_data > imputed_data.mean(axis=0)
                 print(first_condition.shape, second_condition.shape, first_condition.dtype, second_condition.dtype)
                 binary_imputed_data = first_condition & second_condition
+                del first_condition
+                del second_condition
                 recon_x = pd.DataFrame(binary_imputed_data, index=dataset.peaks, columns=dataset.barcode)
+                del binary_imputed_data
+                gc.collect()
                 for cell_type in cell_types:
                     print(labels, cell_type)
                     type_specific_cells = list(labels[labels == cell_type].index)
@@ -160,11 +169,15 @@ if __name__ == '__main__':
                     print(cell_type, cell_type_matrix.shape)
 
                     sum_by_peaks = cell_type_matrix.sum(axis=1) >= 1
-
+                    del cell_type_matrix
+                    gc.collect()
                     filtered_peaks = sum_by_peaks[sum_by_peaks >= 1]
-                    filtered_peaks.to_csv(os.path.join(outdir, f'imputed_data_{iteration}_{cell_type.replace(" ", "_").replace("/", "_")}.txt'), header=None)
-                    print(filtered_peaks.shape)
-                #recon_x.to_csv(os.path.join(outdir, f'imputed_data_{iteration}.txt'), sep='\t')
+                    filtered_peaks.to_csv(
+                        os.path.join(outdir, f'imputed_data_{iteration}_{cell_type.replace(" ", "_").replace("/", "_")}.txt'),
+                        header=None,
+                        columns=[]
+                    )
+            gc.collect()  
 #         torch.save(model.to('cpu').state_dict(), os.path.join(outdir, 'model.pt')) # save model
     else:
         print('\n## Loading Model: {}\n'.format(args.pretrain))
@@ -199,19 +212,3 @@ if __name__ == '__main__':
             binary_imputed_data = ((imputed_data.T > imputed_data.mean(axis=1)).T & imputed_data > imputed_data.mean(axis=0)).astype(int)
             recon_x = pd.DataFrame(binary_imputed_data, index=dataset.peaks, columns=dataset.barcode)
             recon_x.to_csv(os.path.join(outdir, 'imputed_data.txt'), sep='\t') 
-        
-#     torch.save(model.to('cpu').state_dict(), os.path.join(outdir, 'model.pt')) # save model
-    
-#     if not args.no_tsne:
-    print("Plotting embedding")
-    if args.reference:
-        #ref = pd.read_csv(args.reference, sep=',', index_col='cell_id')['cell_types']
-        ref = pd.read_csv(args.reference, sep='\t', header=None, index_col=0)[1]
-        labels = ref.reindex(dataset.barcode, fill_value='unknown')
-    else:
-        labels = pred
-    plot_embedding(feature, labels, method=args.emb, 
-                   save=os.path.join(outdir, 'emb_{}.pdf'.format(args.emb)), save_emb=os.path.join(outdir, 'emb_{}.txt'.format(args.emb)))
-#         plot_embedding(feature, labels, 
-#                        save=os.path.join(outdir, 'tsne.pdf'), save_emb=os.path.join(outdir, 'tsne.txt'))
-        

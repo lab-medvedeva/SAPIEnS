@@ -40,6 +40,19 @@ Installation only requires a few minutes.
     --sra ~/Downloads/SraRunTable\ \(1\).txt \
     --bams ~/Science/BioInfo/data/sra_bam_cleaned_shifted
 ```
+
+# Running footprinting from ATLAS dataset
+```
+./footprinting_atlas.sh \
+    --dump_folder mouse_cicero_pipeline \
+    --scale_output results/mouse_atlas_cicero_k_30_test  \
+    --iteration 9999 \
+    --cell_type_1 Inhibitory_neurons \
+    --cell_type_2 Purkinje_cells \
+    --bams <path/to/bams> \
+    --organism mm9
+```
+
 ## Quick Start
 
 #### Input
