@@ -85,67 +85,36 @@ then
         --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
 fi
 
-#python post_filtering_peaks.py \
-#    --imputed_data ${COUNT_MATRIX} \
-#    --cell_names ${CELL_NAMES} \
-#    --peak_names ${PEAK_FILE} \
-#    --cell_type ${CELL_TYPE_1} \
-#    --output_path ${DUMP_FOLDER}/${CELL_TYPE_1}_raw_peaks.bed
-
-#python post_filtering_peaks.py \
-#    --imputed_data ${COUNT_MATRIX} \
-#    --cell_name ${CELL_NAMES} \
-#    --peak_names ${PEAK_FILE} \
-#    --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_raw_peaks.bed
-
 echo "Bed 1: ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed"
-echo "Bed 2: {DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed"
+echo "Bed 2: ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed"
 
 echo "Footprinting"
-rgt-hint footprinting --atac-seq --paired-end --organism ${ORGANISM} \
-    --output-location ${FOOTPRINTS_FOLDER} \
-    --output-prefix ${CELL_TYPE_1}_${NUM_ITERATION} ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed
+if [ ! -z ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}.bed ]
+then
+    rgt-hint footprinting --atac-seq --paired-end --organism ${ORGANISM} \
+        --output-location ${FOOTPRINTS_FOLDER} \
+        --output-prefix ${CELL_TYPE_1}_${NUM_ITERATION} ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed
+fi
 
-rgt-hint footprinting --atac-seq --paired-end --organism ${ORGANISM} \
-    --output-location ${FOOTPRINTS_FOLDER} \
-    --output-prefix ${CELL_TYPE_2}_${NUM_ITERATION} ${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
+if [ ! -z ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}.bed ]
+then
+    rgt-hint footprinting --atac-seq --paired-end --organism ${ORGANISM} \
+        --output-location ${FOOTPRINTS_FOLDER} \
+        --output-prefix ${CELL_TYPE_2}_${NUM_ITERATION} ${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
 
-#echo "Footprinting raw peaks"
-#rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
-#    --output-location ${FOOTPRINTS_FOLDER} \
-#    --output-prefix ${CELL_TYPE_1}_raw ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_1}_raw_peaks.bed
-
-#rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
-#    --output-location ${FOOTPRINTS_FOLDER} \
-#    --output-prefix ${CELL_TYPE_2}_raw ${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_2}_raw_peaks.bed
-
+fi
 
 echo "Motif Matching"
-rgt-motifanalysis matching --organism=hg38 \
+rgt-motifanalysis matching --organism=${ORGANISM} \
     --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:MOUSE" \
     --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}.bed
 
-rgt-motifanalysis matching --organism=hg38 \
+rgt-motifanalysis matching --organism=${ORGANISM} \
     --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:MOUSE" \
     --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}.bed
 
-#echo "Motif Matching for raw peaks"
-#rgt-motifanalysis matching --organism=hg38 \
-#    --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
-#    --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_raw.bed
-
-#rgt-motifanalysis matching --organism=hg38 \
-#    --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
-#    --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_raw.bed
-
-#echo "Raw Differential Footprinting"
-#rgt-hint differential --organism hg38 --bc --nc 8 --mpbs-files ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_raw_mpbs.bed,${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_raw_mpbs.bed \
-#    --reads-files ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam,${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam \
-#    --conditions ${CELL_TYPE_1},${CELL_TYPE_2} \
-#    --output-location ${FOOTPRINTS_FOLDER}/cicero_raw_${CELL_TYPE_1}_vs_${CELL_TYPE_2} --no-lineplots
-
 echo "Differential Footprinting"
-rgt-hint differential --organism hg38 --bc --nc 8 --mpbs-files ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_mpbs.bed,${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_mpbs.bed \
+rgt-hint differential --organism ${ORGANISM} --bc --nc 8 --mpbs-files ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_mpbs.bed,${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_mpbs.bed \
     --reads-files ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam,${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam \
     --conditions ${CELL_TYPE_1},${CELL_TYPE_2} \
     --output-location ${FOOTPRINTS_FOLDER}/cicero_${NUM_ITERATION}_${CELL_TYPE_1}_vs_${CELL_TYPE_2}
