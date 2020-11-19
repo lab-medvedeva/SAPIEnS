@@ -92,7 +92,40 @@ python prepare_cicero_peaks.py \
     --cell_type_1 Inhibitory_neurons \
     --cell_type_2 Purkinje_cells \
     --bams <path/to/bams> \
-    --organism mm9
+    --organism mm9 \
+    --filter
+```
+
+# Docker setup
+
+## Building Docker container
+
+```
+docker build -t scale .
+```
+
+## Running Docker container
+```
+./run_docker_gpu.sh
+```
+
+Please, sure that nvidia-container-runtime is installed and configured for Docker. 
+Links for installation are: 
+* https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#daemon-configuration-file
+* https://nvidia.github.io/nvidia-container-runtime/
+
+## Running pipeline from container:
+```
+python3 SCALE.py \
+    --outdir results/mouse_atlas_cicero_k_30_test \
+    -d data/mouse_atlas_cicero \
+    -r data/mouse_atlas_cicero/labels.txt \
+    -x 0.002 \
+    --max_iter 50000 \
+    --impute \
+    --impute_iteration 10000 \
+    -k 30 \
+    --reference_type atlas
 ```
 
 ## Quick Start
