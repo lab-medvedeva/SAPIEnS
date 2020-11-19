@@ -42,6 +42,48 @@ Installation only requires a few minutes.
 ```
 
 # Running footprinting from ATLAS dataset
+
+## Prepare raw peaks
+```
+python prepare_cicero_peaks.py \
+    --dataset_path ../data/MouseAtlasPreprocessed/mouse_atlas \
+    --label_path mouse_atlas_cicero/labels.txt \
+    --num_peaks_threshold 30000 \
+    --output_path mouse_cicero_pipeline/raw_peaks \
+    --suffix raw_peaks
+```
+
+## Prepare Cicero peaks
+```
+python prepare_cicero_peaks.py \
+    --dataset_path mouse_atlas_cicero \
+    --label_path mouse_atlas_cicero/labels.txt \
+    --num_peaks_threshold 30000 \
+    --output_path mouse_cicero_pipeline/cicero_peaks \
+    --suffix cicero_peaks
+```
+
+## Run footprinting on raw peaks
+```
+./footprinting_atlas.sh \
+    --dump_folder mouse_cicero_pipeline/raw_peaks \
+    --iteration raw --cell_type_1 Astrocytes \
+    --cell_type_2 Hepatocytes \
+    --bams /8tbsata/Science/BioInfo/data/MouseDataset/ConcatenatedBams \
+    --organism mm9
+```
+
+## Run footprinting on Cicero peaks
+```
+./footprinting_atlas.sh \
+    --dump_folder mouse_cicero_pipeline/cicero_peaks \
+    --iteration cicero \
+    --cell_type_1 Astrocytes \
+    --cell_type_2 Hepatocytes \
+    --bams /8tbsata/Science/BioInfo/data/MouseDataset/ConcatenatedBams --organism mm9
+```
+
+## Run footprinting on SCALE results
 ```
 ./footprinting_atlas.sh \
     --dump_folder mouse_cicero_pipeline \

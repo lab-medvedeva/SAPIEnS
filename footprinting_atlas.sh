@@ -47,6 +47,10 @@ do
             HELP=1
             shift 2
             ;;
+        -f|--filter)
+            FILTER="yes"
+            shift 2
+            ;;
     esac
 done
 
@@ -61,23 +65,25 @@ FOOTPRINTS_FOLDER=${DUMP_FOLDER}/found_footprints
 mkdir -p ${FOOTPRINTS_FOLDER}
 
 BAMS_FOLDER=${BAMS}
-
+FILTER="${FILTER:-no}"
 echo $RGTDATA
 
-python post_filtering_peaks.py \
-    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_1}.txt \
-    --cell_type ${CELL_TYPE_1} \
-    --pipeline from_peaks \
-    --dataset mouse_atlas \
-    --output_path ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed
+if [ $FILTER == "yes" ]
+then
+    python post_filtering_peaks.py \
+        --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_1}.txt \
+        --cell_type ${CELL_TYPE_1} \
+        --pipeline from_peaks \
+        --dataset mouse_atlas \
+        --output_path ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed
 
-python post_filtering_peaks.py \
-    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_2}.txt \
-    --cell_type ${CELL_TYPE_2} \
-    --pipeline from_peaks \
-    --dataset mouse_atlas \
-    --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
-
+    python post_filtering_peaks.py \
+        --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_2}.txt \
+        --cell_type ${CELL_TYPE_2} \
+        --pipeline from_peaks \
+        --dataset mouse_atlas \
+        --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
+fi
 
 #python post_filtering_peaks.py \
 #    --imputed_data ${COUNT_MATRIX} \
@@ -92,17 +98,8 @@ python post_filtering_peaks.py \
 #    --peak_names ${PEAK_FILE} \
 #    --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_raw_peaks.bed
 
-
-#echo "Concatenating BAMs"
-#python concatenate_bams.py --sra "${SRA}" \
-#    --cell_type ${CELL_TYPE_1} \
-#    --input_folder ${BAMS} \
-#    --output_folder ${BAMS_FOLDER}
-
-#python concatenate_bams.py --sra "${SRA}" \
-#    --cell_type ${CELL_TYPE_2} \
-#    --input_folder ${BAMS} \
-#    --output_folder ${BAMS_FOLDER}
+echo "Bed 1: ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed"
+echo "Bed 2: {DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed"
 
 echo "Footprinting"
 rgt-hint footprinting --atac-seq --paired-end --organism ${ORGANISM} \

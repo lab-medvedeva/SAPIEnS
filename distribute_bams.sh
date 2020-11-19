@@ -4,8 +4,4 @@ output=$3
 
 mkdir -p $output
 
-for filename in ${input_folder}/*.bam
-do
-    echo $filename
-    python distribute_bams.py --input_bam $filename --cell_labels ${cell_labels} --output $output
-done
+ls ${input_folder}/*.bam | parallel -j 8 --progress python distribute_bams.py --input_bam {} --cell_labels ${cell_labels} --output $output
