@@ -98,13 +98,13 @@ python prepare_cicero_peaks.py \
 
 # Docker setup
 
-## Building Docker container
+## Building Docker container for gpu
 
 ```
 docker build -t scale .
 ```
 
-## Running Docker container
+## Running Docker container for gpu
 ```
 ./run_docker_gpu.sh
 ```
@@ -114,6 +114,16 @@ Links for installation are:
 * https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#daemon-configuration-file
 * https://nvidia.github.io/nvidia-container-runtime/
 
+
+## Building Docker container for cpu
+```
+docker build -t scale-cpu -f Dockerfile-cpu .
+```
+
+## Running Docker container for cpu
+```
+./run_docker_cpu.sh
+```
 ## Running pipeline from container:
 ```
 python3 SCALE.py \

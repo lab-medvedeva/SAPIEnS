@@ -49,7 +49,7 @@ do
             ;;
         -f|--filter)
             FILTER="yes"
-            shift 2
+            shift 1
             ;;
     esac
 done

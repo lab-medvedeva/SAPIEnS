@@ -1,0 +1,4 @@
+torch>=1.0.0
+RGT==0.13.1
+numba==0.49.1
+umap-learn==0.4.5
