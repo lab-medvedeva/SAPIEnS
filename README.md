@@ -96,6 +96,43 @@ python prepare_cicero_peaks.py \
     --filter
 ```
 
+## Run footprinting on all dataset
+
+### For raw peaks
+
+```
+./footprinting_atlas_full_dataset.sh \
+    --dump_folder mouse_cicero_pipeline \
+    -out ../SCALE_results/mouse_atlas_cicero_k_30_test \
+    --iteration raw \
+    --cell_types cell_types.txt 
+    --bams <path/to/bams> --organism mm9
+```
+If you use `raw` or `cicero` option, you should not set filter option
+
+### For SCALE results
+
+```
+./footprinting_atlas_full_dataset.sh \
+    --dump_folder mouse_cicero_pipeline \
+    -out ../SCALE_results/mouse_atlas_cicero_k_30_test \
+    --iteration 29999 \
+    --cell_types cell_types.txt \
+    --bams <path/to/bams> \
+    --organism mm9 \
+    --filter
+```
+
+## Draw postprocessing statistics
+```
+python draw_footprinting_statistics.py \
+    --input mouse_cicero_pipeline/found_footprints/cicero_29999/differential_statistics.txt\
+    --experiment_name cicero_29999 \
+    --output_root charts
+```
+
+In folder `charts` you can find comparison chart and csv file with significant motif factors.
+
 # Docker setup
 
 ## Building Docker container for gpu
