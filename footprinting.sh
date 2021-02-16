@@ -69,19 +69,31 @@ mkdir -p ${BAMS_FOLDER}
 
 echo $RGTDATA
 
+echo "Filtering peaks"
 python post_filtering_peaks.py \
-    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}.txt \
-    --cell_names ${CELL_NAMES} \
+    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_1}.txt \
     --peak_names ${PEAK_FILE} \
-    --cell_type ${CELL_TYPE_1} \
     --output_path ${DUMP_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_peaks.bed
 
 python post_filtering_peaks.py \
-    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}.txt \
-    --cell_names ${CELL_NAMES} \
+    --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_2}.txt \
     --peak_names ${PEAK_FILE} \
-    --cell_type ${CELL_TYPE_2} \
     --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
+
+echo ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
+#python post_filtering_peaks.py \
+#    --imputed_data ${COUNT_MATRIX} \
+#    --cell_names ${CELL_NAMES} \
+#    --peak_names ${PEAK_FILE} \
+#    --cell_type ${CELL_TYPE_1} \
+#    --output_path ${DUMP_FOLDER}/${CELL_TYPE_1}_raw_peaks.bed
+
+#python post_filtering_peaks.py \
+#    --imputed_data ${COUNT_MATRIX} \
+#    --cell_name ${CELL_NAMES} \
+#    --peak_names ${PEAK_FILE} \
+#    --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_raw_peaks.bed
+
 
 echo "Concatenating BAMs"
 python concatenate_bams.py --sra "${SRA}" \
@@ -103,6 +115,16 @@ rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
     --output-location ${FOOTPRINTS_FOLDER} \
     --output-prefix ${CELL_TYPE_2}_${NUM_ITERATION} ${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
 
+echo "Footprinting raw peaks"
+rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
+    --output-location ${FOOTPRINTS_FOLDER} \
+    --output-prefix ${CELL_TYPE_1}_raw ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_1}_raw_peaks.bed
+
+rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
+    --output-location ${FOOTPRINTS_FOLDER} \
+    --output-prefix ${CELL_TYPE_2}_raw ${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam ${DUMP_FOLDER}/${CELL_TYPE_2}_raw_peaks.bed
+
+
 echo "Motif Matching"
 rgt-motifanalysis matching --organism=hg38 \
     --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
@@ -111,6 +133,21 @@ rgt-motifanalysis matching --organism=hg38 \
 rgt-motifanalysis matching --organism=hg38 \
     --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
     --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}.bed
+
+echo "Motif Matching for raw peaks"
+rgt-motifanalysis matching --organism=hg38 \
+    --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
+    --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_raw.bed
+
+rgt-motifanalysis matching --organism=hg38 \
+    --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
+    --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_raw.bed
+
+echo "Raw Differential Footprinting"
+rgt-hint differential --organism hg38 --bc --nc 8 --mpbs-files ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_raw_mpbs.bed,${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_raw_mpbs.bed \
+    --reads-files ${BAMS_FOLDER}/${CELL_TYPE_1}_sorted.bam,${BAMS_FOLDER}/${CELL_TYPE_2}_sorted.bam \
+    --conditions ${CELL_TYPE_1},${CELL_TYPE_2} \
+    --output-location ${FOOTPRINTS_FOLDER}/cicero_raw_${CELL_TYPE_1}_vs_${CELL_TYPE_2} --no-lineplots
 
 echo "Differential Footprinting"
 rgt-hint differential --organism hg38 --bc --nc 8 --mpbs-files ${FOOTPRINTS_FOLDER}/${CELL_TYPE_1}_${NUM_ITERATION}_mpbs.bed,${FOOTPRINTS_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_mpbs.bed \

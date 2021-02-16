@@ -40,6 +40,141 @@ Installation only requires a few minutes.
     --sra ~/Downloads/SraRunTable\ \(1\).txt \
     --bams ~/Science/BioInfo/data/sra_bam_cleaned_shifted
 ```
+
+# Running footprinting from ATLAS dataset
+
+## Prepare raw peaks
+```
+python prepare_cicero_peaks.py \
+    --dataset_path ../data/MouseAtlasPreprocessed/mouse_atlas \
+    --label_path mouse_atlas_cicero/labels.txt \
+    --num_peaks_threshold 30000 \
+    --output_path mouse_cicero_pipeline/raw_peaks \
+    --suffix raw_peaks
+```
+
+## Prepare Cicero peaks
+```
+python prepare_cicero_peaks.py \
+    --dataset_path mouse_atlas_cicero \
+    --label_path mouse_atlas_cicero/labels.txt \
+    --num_peaks_threshold 30000 \
+    --output_path mouse_cicero_pipeline/cicero_peaks \
+    --suffix cicero_peaks
+```
+
+## Run footprinting on raw peaks
+```
+./footprinting_atlas.sh \
+    --dump_folder mouse_cicero_pipeline/raw_peaks \
+    --iteration raw --cell_type_1 Astrocytes \
+    --cell_type_2 Hepatocytes \
+    --bams /8tbsata/Science/BioInfo/data/MouseDataset/ConcatenatedBams \
+    --organism mm9
+```
+
+## Run footprinting on Cicero peaks
+```
+./footprinting_atlas.sh \
+    --dump_folder mouse_cicero_pipeline/cicero_peaks \
+    --iteration cicero \
+    --cell_type_1 Astrocytes \
+    --cell_type_2 Hepatocytes \
+    --bams /8tbsata/Science/BioInfo/data/MouseDataset/ConcatenatedBams --organism mm9
+```
+
+## Run footprinting on SCALE results
+```
+./footprinting_atlas.sh \
+    --dump_folder mouse_cicero_pipeline \
+    --scale_output results/mouse_atlas_cicero_k_30_test  \
+    --iteration 9999 \
+    --cell_type_1 Inhibitory_neurons \
+    --cell_type_2 Purkinje_cells \
+    --bams <path/to/bams> \
+    --organism mm9 \
+    --filter
+```
+
+## Run footprinting on all dataset
+
+### For raw peaks
+
+```
+./footprinting_atlas_full_dataset.sh \
+    --dump_folder mouse_cicero_pipeline \
+    -out ../SCALE_results/mouse_atlas_cicero_k_30_test \
+    --iteration raw \
+    --cell_types cell_types.txt 
+    --bams <path/to/bams> --organism mm9
+```
+If you use `raw` or `cicero` option, you should not set filter option
+
+### For SCALE results
+
+```
+./footprinting_atlas_full_dataset.sh \
+    --dump_folder mouse_cicero_pipeline \
+    -out ../SCALE_results/mouse_atlas_cicero_k_30_test \
+    --iteration 29999 \
+    --cell_types cell_types.txt \
+    --bams <path/to/bams> \
+    --organism mm9 \
+    --filter
+```
+
+## Draw postprocessing statistics
+```
+python draw_footprinting_statistics.py \
+    --input mouse_cicero_pipeline/found_footprints/cicero_29999/differential_statistics.txt\
+    --experiment_name cicero_29999 \
+    --output_root charts
+```
+
+In folder `charts` you can find comparison chart and csv file with significant motif factors.
+
+# Docker setup
+
+## Building Docker container for gpu
+
+```
+docker build -t scale .
+```
+
+## Running Docker container for gpu
+```
+./run_docker_gpu.sh
+```
+
+Please, sure that nvidia-container-runtime is installed and configured for Docker. 
+Links for installation are: 
+* https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#daemon-configuration-file
+* https://nvidia.github.io/nvidia-container-runtime/
+
+
+## Building Docker container for cpu
+```
+docker build -t scale-cpu -f Dockerfile-cpu .
+```
+
+## Running Docker container for cpu
+```
+./run_docker_cpu.sh
+```
+## Running pipeline from container:
+```
+python3 SCALE.py \
+    --outdir results/mouse_atlas_cicero_k_30_test \
+    -d data/mouse_atlas_cicero \
+    -r data/mouse_atlas_cicero/labels.txt \
+    -x 0.002 \
+    --max_iter 50000 \
+    --impute \
+    --impute_iteration 10000 \
+    -k 30 \
+    --reference_type atlas
+```
+
 ## Quick Start
 
 #### Input

@@ -1,0 +1,4 @@
+https://download.pytorch.org/whl/cu100/torch-1.4.0%2Bcu100-cp36-cp36m-linux_x86_64.whl
+RGT==0.13.1
+numba==0.49.1
+umap-learn==0.4.5

@@ -12,6 +12,7 @@ from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
+    print(requirements)
 
 setup(name='scale-atac',
       version='1.0.2',
