@@ -5,7 +5,7 @@ HELP=""
 while [[ $# -gt 0 ]]
 do
     key=$1
-    echo $key $2
+    echo $key
     case $key in
         -d|--dump_folder)
             DUMP_FOLDER=$2
@@ -17,6 +17,10 @@ do
             ;;
         -c|--count_matrix)
             COUNT_MATRIX=$2
+            shift 2
+            ;;
+        --cell_names)
+            CELL_NAMES=$2
             shift 2
             ;;
         -out|--scale_output)
@@ -35,21 +39,17 @@ do
                 echo $cell_type
             done
             ;;
-        -b|--bams)
-            BAMS=$2
+        --sra)
+            SRA=$2
             shift 2
             ;;
-        -o|--organism)
-            ORGANISM=$2
+        -b|--bams)
+            BAMS=$2
             shift 2
             ;;
         -h|--help)
             HELP=1
             shift 2
-            ;;
-        -f|--filter)
-            FILTER="yes"
-            shift 1
             ;;
     esac
 done
@@ -64,24 +64,39 @@ fi
 FOOTPRINTS_FOLDER=${DUMP_FOLDER}/found_footprints
 mkdir -p ${FOOTPRINTS_FOLDER}
 
-BAMS_FOLDER=${BAMS}
-FILTER="${FILTER:-no}"
+BAMS_FOLDER=${DUMP_FOLDER}/bams
+mkdir -p ${BAMS_FOLDER}
+
 echo $RGTDATA
 
+echo "Filtering peaks"
+for cell_type in ${CELL_TYPES[@]}
+do
+    echo $cell_type
+    python post_filtering_peaks.py \
+        --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${cell_type}.txt \
+        --peak_names ${PEAK_FILE} \
+        --output_path ${DUMP_FOLDER}/${cell_type}_${NUM_ITERATION}_peaks.bed
+done
 
 LIST_MBPS=()
 LIST_SORTED_BAMS=()
 
+
+echo "Concatenating BAMs"
 for cell_type in ${CELL_TYPES[@]}
 do
-    LIST_MBPS+=("${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}_mpbs.bed")
+    echo $cell_type
     sorted_bam="${BAMS_FOLDER}/${cell_type}_sorted.bam"
-    echo "$sorted_bam"
+
     if [ ! -f $sorted_bam ]
     then
-        echo "Sorting ${cell_type}"
-        samtools sort ${BAMS_FOLDER}/${cell_type}.bam > ${sorted_bam}
+        python concatenate_bams.py --sra "${SRA}" \
+            --cell_type ${cell_type} \
+            --input_folder ${BAMS} \
+            --output_folder ${BAMS_FOLDER}
     fi
+    LIST_MBPS+=("${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}_mpbs.bed")
     LIST_SORTED_BAMS+=("${BAMS_FOLDER}/${cell_type}_sorted.bam")
 done
 
@@ -95,44 +110,38 @@ echo $FULL_LIST_BAMS
 FULL_LIST_TYPES=$(IFS=, ; printf "%s" "${CELL_TYPES[*]}")
 echo $FULL_LIST_TYPES
 
-if [ $FILTER == "yes" ]
-then
-    for cell_type in ${CELL_TYPES[@]}
-    do
-        python post_filtering_peaks.py \
-            --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${cell_type}.txt \
-            --cell_type ${cell_type} \
-            --pipeline from_peaks \
-            --dataset mouse_atlas \
-            --output_path ${DUMP_FOLDER}/${cell_type}_${NUM_ITERATION}_peaks.bed
-    done
-fi
 
+echo "Footprinting"
 
 for cell_type in ${CELL_TYPES[@]}
 do
-    echo "Cell type: ${cell_type}"
-    echo "Footprinting"
+    echo $cell_type
     if [ ! -f ${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}.bed ]
     then
-        rgt-hint footprinting --atac-seq --paired-end --organism ${ORGANISM} \
+        rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
             --output-location ${FOOTPRINTS_FOLDER} \
             --output-prefix ${cell_type}_${NUM_ITERATION} ${BAMS_FOLDER}/${cell_type}_sorted.bam ${DUMP_FOLDER}/${cell_type}_${NUM_ITERATION}_peaks.bed
     fi
 done
 
+
+echo "Motif Matching"
+
 for cell_type in ${CELL_TYPES[@]}
 do
-    echo "Cell type: ${cell_type}"
-    echo "Matching"
-    rgt-motifanalysis matching --organism=${ORGANISM} \
-        --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:MOUSE" \
-        --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}.bed
-
+    echo $cell_type
+    if [ ! -f "${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}_mpbs.bed" ]
+    then
+        rgt-motifanalysis matching --organism=hg38 \
+            --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
+            --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}.bed
+    fi
 done
 
+
 echo "Differential Footprinting"
-rgt-hint differential --organism ${ORGANISM} --bc --nc 24 --mpbs-files ${FULL_LIST_MBPS} \
+rgt-hint differential --organism hg38 --bc --nc 24 --mpbs-files ${FULL_LIST_MBPS} \
     --reads-files ${FULL_LIST_BAMS} \
     --conditions ${FULL_LIST_TYPES} \
     --output-location ${FOOTPRINTS_FOLDER}/cicero_${NUM_ITERATION}
+

@@ -51,7 +51,7 @@ class SingleCellDataset(Dataset):
         data = self.data[index];
         if type(data) is not np.ndarray:
             data = data.toarray().squeeze()
-        return data
+        return torch.FloatTensor(data)
     
     def info(self):
         print("\n===========================")

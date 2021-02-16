@@ -69,6 +69,7 @@ mkdir -p ${BAMS_FOLDER}
 
 echo $RGTDATA
 
+echo "Filtering peaks"
 python post_filtering_peaks.py \
     --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${CELL_TYPE_1}.txt \
     --peak_names ${PEAK_FILE} \
@@ -79,7 +80,7 @@ python post_filtering_peaks.py \
     --peak_names ${PEAK_FILE} \
     --output_path ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
 
-
+echo ${DUMP_FOLDER}/${CELL_TYPE_2}_${NUM_ITERATION}_peaks.bed
 #python post_filtering_peaks.py \
 #    --imputed_data ${COUNT_MATRIX} \
 #    --cell_names ${CELL_NAMES} \

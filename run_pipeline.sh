@@ -50,7 +50,7 @@ echo "DUMP_FOLDER: ${DUMP_FOLDER}"
 echo "PEAK_FILE: ${PEAK_FILE}"
 echo "CICERO_THRESHOLD: ${CICERO_THRESHOLD}"
 echo "CELL_NAMES: ${CELL_NAMES}"
-echo "SCALE_OUTPUT_FOLDER: ${SCALE_OUTPUT_FOLDER}"
+echo "SCALE_OUTPUT_FOLDER: ${SCALE_OUTPUT}"
 echo "RUN_CICERO: ${RUN_CICERO}"
 
 mkdir -p ${DUMP_FOLDER}
@@ -82,7 +82,7 @@ then
 fi
 
 python SCALE.py -d ${DUMP_FOLDER}/cicero_count_matrix.csv \
-    --impute --latent 10 \
+    --latent 10 \
     -o ${SCALE_OUTPUT} \
     --min_peaks 1 \
     -x 0.001 \
