@@ -47,9 +47,15 @@ do
             BAMS=$2
             shift 2
             ;;
+        --peak_save)
+            PEAK_SAVE=$2
+            shift 2
+            ;;
         -h|--help)
             HELP=1
-            shift 2
+            shift 1
+            echo "Usage: ..."
+            exit 0
             ;;
     esac
 done
@@ -74,9 +80,9 @@ for cell_type in ${CELL_TYPES[@]}
 do
     echo $cell_type
     python post_filtering_peaks.py \
-        --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${cell_type}.txt \
+        --imputed_data ${SCALE_OUTPUT}/imputed_data_${PEAK_SAVE}_${NUM_ITERATION}_${cell_type}.txt \
         --peak_names ${PEAK_FILE} \
-        --output_path ${DUMP_FOLDER}/${cell_type}_${NUM_ITERATION}_peaks.bed
+        --output_path ${DUMP_FOLDER}/${PEAK_SAVE}_${cell_type}_${NUM_ITERATION}_peaks.bed
 done
 
 LIST_MBPS=()
@@ -96,7 +102,7 @@ do
             --input_folder ${BAMS} \
             --output_folder ${BAMS_FOLDER}
     fi
-    LIST_MBPS+=("${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}_mpbs.bed")
+    LIST_MBPS+=("${FOOTPRINTS_FOLDER}/${PEAK_SAVE}_${cell_type}_${NUM_ITERATION}_mpbs.bed")
     LIST_SORTED_BAMS+=("${BAMS_FOLDER}/${cell_type}_sorted.bam")
 done
 
@@ -116,11 +122,11 @@ echo "Footprinting"
 for cell_type in ${CELL_TYPES[@]}
 do
     echo $cell_type
-    if [ ! -f ${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}.bed ]
+    if [ ! -f ${FOOTPRINTS_FOLDER}/${PEAK_SAVE}_${cell_type}_${NUM_ITERATION}.bed ]
     then
         rgt-hint footprinting --atac-seq --paired-end --organism hg38 \
             --output-location ${FOOTPRINTS_FOLDER} \
-            --output-prefix ${cell_type}_${NUM_ITERATION} ${BAMS_FOLDER}/${cell_type}_sorted.bam ${DUMP_FOLDER}/${cell_type}_${NUM_ITERATION}_peaks.bed
+            --output-prefix ${PEAK_SAVE}_${cell_type}_${NUM_ITERATION} ${BAMS_FOLDER}/${cell_type}_sorted.bam ${DUMP_FOLDER}/${PEAK_SAVE}_${cell_type}_${NUM_ITERATION}_peaks.bed
     fi
 done
 
@@ -130,11 +136,11 @@ echo "Motif Matching"
 for cell_type in ${CELL_TYPES[@]}
 do
     echo $cell_type
-    if [ ! -f "${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}_mpbs.bed" ]
+    if [ ! -f "${FOOTPRINTS_FOLDER}/${PEAK_SAVE}_${cell_type}_${NUM_ITERATION}_mpbs.bed" ]
     then
         rgt-motifanalysis matching --organism=hg38 \
             --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
-            --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}.bed
+            --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${PEAK_SAVE}_${cell_type}_${NUM_ITERATION}.bed
     fi
 done
 
@@ -143,5 +149,5 @@ echo "Differential Footprinting"
 rgt-hint differential --organism hg38 --bc --nc 24 --mpbs-files ${FULL_LIST_MBPS} \
     --reads-files ${FULL_LIST_BAMS} \
     --conditions ${FULL_LIST_TYPES} \
-    --output-location ${FOOTPRINTS_FOLDER}/cicero_${NUM_ITERATION}
+    --output-location ${FOOTPRINTS_FOLDER}/cicero_${PEAK_SAVE}_${NUM_ITERATION}
 

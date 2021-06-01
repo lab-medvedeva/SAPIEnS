@@ -23,10 +23,11 @@ def parse_args():
     parser.add_argument('--input', help='Path to csv file with name differential_statistics.txt')
     parser.add_argument('--experiment_name', help='Name of experiment')
     parser.add_argument('--output_root', help='Default folder where to save results')
+    parser.add_argument('--p_value', help='p-value size', type=float, default=0.05)
     return parser.parse_args()
 
 
-def draw_plot(df, cell_type1, cell_type2, save_chart_path, save_significant_path):
+def draw_plot(df, cell_type1, cell_type2, save_chart_path, save_significant_path, save_raw_path, p_value):
     tf_activity_score = df[f'Protection_Score_{cell_type1}'] + df[f'TC_{cell_type1}']
     tf_activity_score_2 = df[f'Protection_Score_{cell_type2}'] + df[f'TC_{cell_type2}']
     score = tf_activity_score_2 - tf_activity_score
@@ -37,7 +38,7 @@ def draw_plot(df, cell_type1, cell_type2, save_chart_path, save_significant_path
     
     result_df['x'] = x_axis
     result_df['p_value'] = p_values
-    result_df['significant'] = result_df['p_value'].apply(lambda x: 'Yes' if x < 0.05 else 'No')
+    result_df['significant'] = result_df['p_value'].apply(lambda x: 'Yes' if x < p_value else 'No')
     
     fig, ax = plt.subplots(figsize=(20, 20))
     chart = sns.scatterplot(data=result_df, x='x', y='score', hue='significant')
@@ -55,6 +56,7 @@ def draw_plot(df, cell_type1, cell_type2, save_chart_path, save_significant_path
     
     fig.savefig(save_chart_path)
     result_df[result_df['significant'] == 'Yes'].to_csv(save_significant_path)
+    result_df.to_csv(save_raw_path)
     return fig
 
 
@@ -79,7 +81,9 @@ def main():
                 cell_type1,
                 cell_type2,
                 save_chart_path=os.path.join(output_folder, f'{args.experiment_name}.png'),
-                save_significant_path=os.path.join(output_folder, f'{args.experiment_name}.csv')
+                save_significant_path=os.path.join(output_folder, f'{args.experiment_name}.csv'),
+                save_raw_path=os.path.join(output_folder, f'{args.experiment_name}_all.csv'),
+                p_value=args.p_value
             )
 
 

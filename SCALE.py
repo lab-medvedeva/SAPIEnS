@@ -29,8 +29,20 @@ from scale.plot import plot_embedding
 
 from sklearn.preprocessing import MaxAbsScaler
 from torch.utils.data import DataLoader
-
+import json
 import gc
+import scipy
+
+
+def save_binarization(recon_x, dataset, args, iteration):
+    recon_x = binarization(recon_x, dataset.data).T
+    imputed_dir = os.path.join(args.outdir, str(iteration))
+    os.makedirs(imputed_dir, exist_ok=True)
+    scipy.io.mmwrite(os.path.join(imputed_dir, 'count.mtx'), recon_x)
+    pd.Series(dataset.peaks).to_csv(os.path.join(imputed_dir, 'peak.txt'), sep='\t', index=False, header=None)
+    pd.Series(dataset.barcode).to_csv(os.path.join(imputed_dir, 'barcode.txt'), sep='\t', index=False, header=None)
+
+
 
 if __name__ == '__main__':
 
@@ -64,6 +76,7 @@ if __name__ == '__main__':
     parser.add_argument('--transpose', '-t', action='store_true', help='Transpose the input matrix')
     parser.add_argument('--impute_iteration', type=int, default=10000, help='Impute iteration save')
     parser.add_argument('--reference_type', choices=['default', 'atlas'], help='Type of pipeline', required=True)
+    parser.add_argument('--peak_save', choices=['raw', 'imputed'], help='Type of imputation', required=True)
     args = parser.parse_args()
 
     # Set random seed
@@ -121,9 +134,10 @@ if __name__ == '__main__':
             ref = pd.read_csv(args.reference, sep='\t', header=None, index_col=0)
             ref_cells = ref[1]
             ref_peaks = ref.index
+        print(dataset.barcode)
+        print(ref_cells)
         labels = ref_cells.reindex(dataset.barcode, fill_value='unknown')
         cell_types = ref_cells.unique()
-        print(labels.head())
         for iteration in model.fit(trainloader,
                   lr=lr, 
                   weight_decay=args.weight_decay,
@@ -146,37 +160,54 @@ if __name__ == '__main__':
             except ValueError:
                 print('Value contains NaNs')
 
-            print(iteration, iteration + 1 % args.impute_iteration)
-            
+			 
             if (iteration + 1) % args.impute_iteration == 0:
                 recon_x = model.encodeBatch(testloader, device, out='x', transforms=[normalizer.inverse_transform])
+                # save_binarization(recon_x, dataset, args, iteration + 1)
                 imputed_data = recon_x.T
-                print(imputed_data.shape, imputed_data.dtype)
-                first_condition = (imputed_data.T > imputed_data.mean(axis=1)).T
-                second_condition = imputed_data > imputed_data.mean(axis=0)
-                print(first_condition.shape, second_condition.shape, first_condition.dtype, second_condition.dtype)
+                print(dataset.data.T.shape, imputed_data.shape, 'dataset shape')
+                if args.peak_save == 'imputed':
+                    first_condition = (imputed_data.T > imputed_data.mean(axis=1)).T
+                    second_condition = imputed_data > imputed_data.mean(axis=0)
+                else:
+                    print('axis 1', imputed_data.mean(axis=1).shape)
+                    print('axis 0', imputed_data.mean(axis=0).shape)
+                    print(imputed_data.T.shape, imputed_data.mean(axis=1).shape, dataset.data.T.mean(axis=1).shape)
+                    first_condition = (imputed_data.T > dataset.data.mean(axis=1)).T
+                    second_condition = (imputed_data > dataset.data.mean(axis=0).T)
+                    print(first_condition.shape)
+                    print(second_condition.shape)
                 binary_imputed_data = first_condition & second_condition
+
+                stats_info = {
+                    'num_non_empty': int(np.sum(binary_imputed_data)),
+                    'num_cells': int(np.prod(binary_imputed_data.shape))
+                }
+                print(iteration, np.sum(binary_imputed_data), np.prod(binary_imputed_data.shape))
                 del first_condition
                 del second_condition
                 recon_x = pd.DataFrame(binary_imputed_data, index=dataset.peaks, columns=dataset.barcode)
                 del binary_imputed_data
+
                 gc.collect()
                 for cell_type in cell_types:
-                    print(labels, cell_type)
                     type_specific_cells = list(labels[labels == cell_type].index)
                     
                     cell_type_matrix = recon_x[type_specific_cells]
-                    print(cell_type, cell_type_matrix.shape)
 
                     sum_by_peaks = cell_type_matrix.sum(axis=1) >= 1
                     del cell_type_matrix
                     gc.collect()
                     filtered_peaks = sum_by_peaks[sum_by_peaks >= 1]
+                    stats_info[f'{cell_type}_peaks'] = len(filtered_peaks)
+                    print(iteration, cell_type, len(filtered_peaks))
                     filtered_peaks.to_csv(
-                        os.path.join(outdir, f'imputed_data_{iteration}_{cell_type.replace(" ", "_").replace("/", "_")}.txt'),
+                        os.path.join(outdir, f'imputed_data_{args.peak_save}_{iteration}_{cell_type.replace(" ", "_").replace("/", "_")}.txt'),
                         header=None,
                         columns=[]
                     )
+                with open(os.path.join(outdir, f'stats_{args.peak_save}_{iteration}.json'), 'w') as fp:
+                    json.dump(stats_info, fp)
             gc.collect()  
 #         torch.save(model.to('cpu').state_dict(), os.path.join(outdir, 'model.pt')) # save model
     else:

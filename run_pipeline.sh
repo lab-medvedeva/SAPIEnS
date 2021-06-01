@@ -39,12 +39,17 @@ do
             HELP=1
             shift 2
             ;;
+        --peak_save)
+            PEAK_SAVE=$2
+            shift 2
+            ;;
     esac
 done
 
 CICERO_THRESHOLD=${CICERO_THRESHOLD:-0.6}
 DUMP_FOLDER=${DUMP_FOLDER:-cicero_data}
 RUN_CICERO=${RUN_CICERO:-false}
+PEAK_SAVE=${PEAK_SAVE:-raw}
 
 echo "DUMP_FOLDER: ${DUMP_FOLDER}"
 echo "PEAK_FILE: ${PEAK_FILE}"
@@ -87,7 +92,7 @@ python SCALE.py -d ${DUMP_FOLDER}/cicero_count_matrix.csv \
     --min_peaks 1 \
     -x 0.001 \
     -r ${CELL_NAMES} \
-    --max_iter 30000 --impute_iteration 1000 --reference_type default
+    --max_iter 30000 --impute_iteration 1000 --reference_type default --peak_save ${PEAK_SAVE}
 
 #python post_filtering_peaks.py \
 #    --imputed_data results/cicero_test/imputed_data_14999.txt \
