@@ -15,10 +15,6 @@ do
             PEAK_FILE=$2
             shift 2
             ;;
-        -c|--count_matrix)
-            COUNT_MATRIX=$2
-            shift 2
-            ;;
         -out|--scale_output)
             SCALE_OUTPUT=$2
             shift 2
@@ -51,6 +47,14 @@ do
             FILTER="yes"
             shift 1
             ;;
+        -c|--from_clusters)
+            FROM_CLUSTERS="yes"
+            shift 1
+            ;;
+        --input_folders) # Applicable when loading from clusters
+            INPUT_FOLDERS=$2
+            shift 2
+            ;;
     esac
 done
 
@@ -66,11 +70,21 @@ mkdir -p ${FOOTPRINTS_FOLDER}
 
 BAMS_FOLDER=${BAMS}
 FILTER="${FILTER:-no}"
+FROM_CLUSTERS="${FROM_CLUSTERS:-no}"
 echo $RGTDATA
 
 
 LIST_MBPS=()
 LIST_SORTED_BAMS=()
+
+if [ ${FROM_CLUSTERS} == "yes" ]
+then
+    if [ ! -d ${BAMS_FOLDER} ]
+    then
+        python concatenate_bams_clusters.py --input_folders ${INPUT_FOLDERS} --clusters ${SCALE_OUTPUT}/cluster_assignments_${NUM_ITERATION}.txt --output_folder ${BAMS_FOLDER}
+    fi
+fi
+
 
 for cell_type in ${CELL_TYPES[@]}
 do
@@ -100,7 +114,7 @@ then
     for cell_type in ${CELL_TYPES[@]}
     do
         python post_filtering_peaks.py \
-            --imputed_data ${SCALE_OUTPUT}/imputed_data_${NUM_ITERATION}_${cell_type}.txt \
+            --imputed_data ${SCALE_OUTPUT}/imputed_data_imputed_${NUM_ITERATION}_${cell_type}.txt \
             --cell_type ${cell_type} \
             --pipeline from_peaks \
             --dataset mouse_atlas \
@@ -131,8 +145,10 @@ do
 
 done
 
+echo ${FULL_LIST_TYPES}
 echo "Differential Footprinting"
 rgt-hint differential --organism ${ORGANISM} --bc --nc 24 --mpbs-files ${FULL_LIST_MBPS} \
+    --no-lineplots \
     --reads-files ${FULL_LIST_BAMS} \
     --conditions ${FULL_LIST_TYPES} \
     --output-location ${FOOTPRINTS_FOLDER}/cicero_${NUM_ITERATION}

@@ -32,6 +32,8 @@ from torch.utils.data import DataLoader
 import json
 import gc
 import scipy
+from tensorboardX import SummaryWriter
+from sklearn.metrics import adjusted_rand_score, silhouette_score
 
 
 def save_binarization(recon_x, dataset, args, iteration):
@@ -70,14 +72,20 @@ if __name__ == '__main__':
     parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--impute', action='store_true', help='Save the imputed data')
     parser.add_argument('--binary', action='store_true', help='Save binary imputed data')
-#     parser.add_argument('--no_tsne', action='store_true', help='Not save the tsne embedding')
     parser.add_argument('--emb', type=str, default='UMAP')
     parser.add_argument('--reference', '-r', default=None, type=str, help='Reference celltypes')
     parser.add_argument('--transpose', '-t', action='store_true', help='Transpose the input matrix')
     parser.add_argument('--impute_iteration', type=int, default=10000, help='Impute iteration save')
     parser.add_argument('--reference_type', choices=['default', 'atlas'], help='Type of pipeline', required=True)
     parser.add_argument('--peak_save', choices=['raw', 'imputed'], help='Type of imputation', required=True)
+    parser.add_argument('--experiment_name', type=str, required=True)
     args = parser.parse_args()
+
+    experiment_path = os.path.join('summaries', args.experiment_name)
+
+    os.makedirs('summaries', exist_ok=True)
+    
+    writer = SummaryWriter(experiment_path)
 
     # Set random seed
     seed = args.seed
@@ -151,11 +159,12 @@ if __name__ == '__main__':
             # labels_filtered = labels[labels != 'Unknown']
             # feature_filtered = feature[labels != 'Unknown']
             try:
-                plot_embedding(
+                embedding = plot_embedding(
                     feature, labels,
                     method=args.emb, 
                     save=os.path.join(outdir, f'emb_{args.emb}_{iteration}.pdf'),
-                    save_emb=os.path.join(outdir, f'emb_{args.emb}_{iteration}.txt')
+                    save_emb=os.path.join(outdir, f'emb_{args.emb}_{iteration}.txt'),
+                    return_emb=True
                 )
             except ValueError:
                 print('Value contains NaNs')
@@ -170,13 +179,9 @@ if __name__ == '__main__':
                     first_condition = (imputed_data.T > imputed_data.mean(axis=1)).T
                     second_condition = imputed_data > imputed_data.mean(axis=0)
                 else:
-                    print('axis 1', imputed_data.mean(axis=1).shape)
-                    print('axis 0', imputed_data.mean(axis=0).shape)
-                    print(imputed_data.T.shape, imputed_data.mean(axis=1).shape, dataset.data.T.mean(axis=1).shape)
                     first_condition = (imputed_data.T > dataset.data.mean(axis=1)).T
                     second_condition = (imputed_data > dataset.data.mean(axis=0).T)
-                    print(first_condition.shape)
-                    print(second_condition.shape)
+                
                 binary_imputed_data = first_condition & second_condition
 
                 stats_info = {
@@ -190,6 +195,42 @@ if __name__ == '__main__':
                 del binary_imputed_data
 
                 gc.collect()
+
+                pred = model.predict(testloader, device)
+
+                ari = adjusted_rand_score(labels, pred)
+
+                # silhouette = silhouette_score(labels, pred)
+
+                writer.add_scalar('metrics/ari', ari, iteration + 1)
+                # writer.add_scalar('metrics/silhouette', silhouette_score, iteration + 1)
+                print('ARI', adjusted_rand_score(labels, pred))
+                # print('Silhouette', silhouette_score(labels, pred))
+
+
+                cluster_predictions = pd.Series(pred, index=dataset.barcode)
+
+                silhouette = silhouette_score(embedding, labels)
+
+                writer.add_scalar('metrics/silhouette', silhouette, iteration + 1)
+                writer.flush()
+
+                for index in range(k):
+                    type_specific_cells = list(labels[cluster_predictions == index].index)
+                    cell_type_matrix = recon_x[type_specific_cells]
+
+                    sum_by_peaks = cell_type_matrix.sum(axis=1) >= 1
+                    del cell_type_matrix
+                    gc.collect()
+                    filtered_peaks = sum_by_peaks[sum_by_peaks >= 1]
+
+                    filtered_peaks.to_csv(
+                        os.path.join(outdir, f'imputed_data_{args.peak_save}_{iteration}_cluster_{index}.txt'),
+                        header=None,
+                        columns=[]
+                    )
+
+
                 for cell_type in cell_types:
                     type_specific_cells = list(labels[labels == cell_type].index)
                     
@@ -208,6 +249,9 @@ if __name__ == '__main__':
                     )
                 with open(os.path.join(outdir, f'stats_{args.peak_save}_{iteration}.json'), 'w') as fp:
                     json.dump(stats_info, fp)
+
+                cluster_predictions.to_csv(os.path.join(outdir, f'cluster_assignments_{iteration}.txt'), sep='\t', header=False)
+     
             gc.collect()  
 #         torch.save(model.to('cpu').state_dict(), os.path.join(outdir, 'model.pt')) # save model
     else:

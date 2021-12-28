@@ -13,6 +13,10 @@ def parse_args():
     return parser.parse_args()
 
 
+def to_peaks_standard(peak_name):
+    return peak_name.replace(':', '_').replace('-', '_')
+
+
 def main():
     args = parse_args()
 
@@ -35,9 +39,9 @@ def main():
             )
         elif args.dataset == 'mouse_atlas':
             print(imputed_peaks.columns)
-            imputed_peaks['chr'] = imputed_peaks[0].apply(lambda x: x.split('_')[0])
-            imputed_peaks['start'] = imputed_peaks[0].apply(lambda x: x.split('_')[1])
-            imputed_peaks['end'] = imputed_peaks[0].apply(lambda x: x.split('_')[2])
+            imputed_peaks['chr'] = imputed_peaks[0].apply(lambda x: to_peaks_standard(x).split('_')[0])
+            imputed_peaks['start'] = imputed_peaks[0].apply(lambda x: to_peaks_standard(x).split('_')[1])
+            imputed_peaks['end'] = imputed_peaks[0].apply(lambda x: to_peaks_standard(x).split('_')[2])
             imputed_peaks[['chr', 'start', 'end']].to_csv(
                 args.output_path,
                 header=None,

@@ -41,6 +41,10 @@ Installation only requires a few minutes.
     --bams ~/Science/BioInfo/data/sra_bam_cleaned_shifted
 ```
 
+## Running Cicero for full peaks table
+```
+genome_path=/8tbsata/Science/BioInfo/data/mm9.chrom.sizes input=./notebooks/breast_tumor_peaks.tsv output=./breast_tumor_cicero.tsv Rscript detect_regions_full.R
+
 # Running footprinting from ATLAS dataset
 
 ## Prepare raw peaks

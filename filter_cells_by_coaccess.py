@@ -10,26 +10,41 @@ def parse_args():
     parser.add_argument('--threshold', type=float, help='Coaccess ratio threshold')
     parser.add_argument('--output', type=str, help='Output path to peaks')
     parser.add_argument('--peak_names', type=str, help='Path to peaks table')
+    parser.add_argument('--organism', type=str, help='Organism', choices=['mouse', 'human'], default='human')
     return parser.parse_args()
+
+
+def read_coaccesses(prefix, organism):
+    if organism == 'human':
+        chromosomes = list(range(1, 23))
+    else:
+        chromosomes = list(range(1, 20))
+    chromosomes += ['X']
+
+    coaccesses = []
+    for chromosome in chromosomes:
+        df = pd.read_csv(f'{prefix}chr{chromosome}.csv')
+        coaccesses.append(df)
+
+    coaccess_df = pd.concat(coaccesses)
+
+    return coaccess_df
 
 
 def main():
     args = parse_args()
+
+    coaccess_df = read_coaccesses(args.prefix, args.organism)
+
+    filtered_peak_names = coaccess_df[coaccess_df['coaccess'] > args.threshold]['Peak1'].unique()
+    print(len(filtered_peak_names))
+
+
     count_matrix = pd.read_csv(args.count_matrix, index_col=0)
-
-    coaccesses = []
-    for i in range(1, 23):
-        df = pd.read_csv(f'{args.prefix}_chr{i}.csv')
-        coaccesses.append(df)
-
-    coaccesses.append(pd.read_csv(f'{args.prefix}_chrX.csv'))
-    coaccess_df = pd.concat(coaccesses)
-
     peak_names = pd.read_csv(args.peak_names)
     peak_names['peak_id'] = peak_names.X1.astype(str) + '_' + peak_names.X2.astype(int).astype(str) + '_' + peak_names.X3.astype(int).astype(str)
     peak_names = peak_names.reset_index().set_index('peak_id')
     
-    filtered_peak_names = coaccess_df[coaccess_df['coaccess'] > args.threshold]['Peak1'].unique()
     print(filtered_peak_names)
     print(peak_names.index)
     filtered_peaks = peak_names[peak_names.index.isin(list(filtered_peak_names))]
