@@ -94,7 +94,7 @@ class VAE(nn.Module):
             from sklearn.cluster import KMeans, MiniBatchKMeans, AgglomerativeClustering
             feature = self.encodeBatch(dataloader, device)
             kmeans = KMeans(n_clusters=self.n_centroids, n_init=20, random_state=0)
-            pred = kmeans.fit_predict(feature)
+            pred = kmeans.fit_predict(np.nan_to_num(feature))
         elif method == 'gmm':
             logits = self.encodeBatch(dataloader, device, out='logit')
             pred = np.argmax(logits, axis=1)
@@ -169,6 +169,7 @@ class VAE(nn.Module):
         for i, inputs in enumerate(dataloader):
             x = inputs
             x = x.view(x.size(0), -1).float().to(device)
+            #print(x.shape)
             z, mu, logvar = self.encoder(x)
 
             if out == 'z':

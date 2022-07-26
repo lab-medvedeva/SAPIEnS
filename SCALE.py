@@ -172,7 +172,7 @@ if __name__ == '__main__':
 			 
             if (iteration + 1) % args.impute_iteration == 0:
                 recon_x = model.encodeBatch(testloader, device, out='x', transforms=[normalizer.inverse_transform])
-                # save_binarization(recon_x, dataset, args, iteration + 1)
+                save_binarization(recon_x, dataset, args, iteration + 1)
                 imputed_data = recon_x.T
                 print(dataset.data.T.shape, imputed_data.shape, 'dataset shape')
                 if args.peak_save == 'imputed':
@@ -192,6 +192,7 @@ if __name__ == '__main__':
                 del first_condition
                 del second_condition
                 recon_x = pd.DataFrame(binary_imputed_data, index=dataset.peaks, columns=dataset.barcode)
+
                 del binary_imputed_data
 
                 gc.collect()

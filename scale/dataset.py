@@ -69,6 +69,7 @@ class SingleCellDataset(Dataset):
         count = np.array((self.data >0).sum(0)).squeeze()
 #         indices = np.where(count > 0.01*X*total_cells)[0] 
         indices = np.where((count > low*total_cells) & (count < high*total_cells))[0] 
+        print(self.data.shape)
         self.data = self.data[:, indices]
         self.peaks = self.peaks[indices]
         
@@ -77,11 +78,11 @@ class SingleCellDataset(Dataset):
         Remove low quality cells by threshold of min_peaks
             min_peaks: if >= 1 means the min_peaks number else is the ratio
         """
-        if min_peaks < 1:
-            min_peaks = len(self.peaks)*min_peaks
-        indices = np.where(np.sum(self.data>0, 1)>=min_peaks)[0]
-        self.data = self.data[indices]
-        self.barcode = self.barcode[indices]
+        #if min_peaks < 1:
+        #    min_peaks = len(self.peaks)*min_peaks
+        #indices = np.where(np.sum(self.data>0, 1)>=min_peaks)[0]
+        #self.data = self.data[indices]
+        #self.barcode = self.barcode[indices]
         
 
 def load_data(path, transpose=False):
