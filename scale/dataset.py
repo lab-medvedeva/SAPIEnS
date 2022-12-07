@@ -127,7 +127,7 @@ def read_csv(path):
         data = pd.read_csv(path, sep=sep, index_col=0).T.astype('float32')
         genes = data.columns.values
         barcode = data.index.values
-    elif 'csv' in path:
+    elif 'tsv' in path or 'csv' in path:
         data = pd.read_csv(path, sep=sep, index_col=0)
         data = data.T.astype('float32')
         genes = data.columns.values
