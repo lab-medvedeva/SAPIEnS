@@ -13,5 +13,5 @@ do
 	mkdir -p $output_metrics_folder
 
 	echo $input_folder $output_metrics_folder/metrics.json
-	sbatch run_clustering.sh $input_folder $labels  $output_metrics_folder/metrics.json  dense matrix.csv	
+	bash run_clustering.sh $input_folder $labels  $output_metrics_folder/metrics.json  dense matrix.csv	
 done

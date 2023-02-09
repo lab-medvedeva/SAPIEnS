@@ -62,7 +62,7 @@ def get_peaks(args):
 def get_feature_matrix(counts):
     transformer = TfidfTransformer()
     tf_idf_matrix = transformer.fit_transform(counts.T)
-    u, d, vt = svds(tf_idf_matrix, k=150, random_state=2022)
+    u, d, vt = svds(tf_idf_matrix, k=150)
     feature_matrix = u @ np.diag(d)
     
     return feature_matrix
