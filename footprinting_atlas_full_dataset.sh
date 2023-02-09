@@ -61,8 +61,8 @@ done
 
 if [ ! -d ${DUMP_FOLDER} ]
 then
-    echo "${DUMP_FOLDER} does not exist. Run pipeline before"
-    exit 
+    mkdir -p ${DUMP_FOLDER}
+#     exit 
 fi
 
 FOOTPRINTS_FOLDER=${DUMP_FOLDER}/found_footprints
@@ -140,7 +140,7 @@ do
     echo "Cell type: ${cell_type}"
     echo "Matching"
     rgt-motifanalysis matching --organism=${ORGANISM} \
-        --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:MOUSE" \
+        --motif-dbs $RGTDATA/motifs/hocomoco --filter "name:HUMAN" \
         --output-location ${FOOTPRINTS_FOLDER} --input-file ${FOOTPRINTS_FOLDER}/${cell_type}_${NUM_ITERATION}.bed
 
 done
