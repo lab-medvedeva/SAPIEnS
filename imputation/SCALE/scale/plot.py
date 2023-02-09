@@ -192,6 +192,7 @@ def plot_embedding(X, labels, classes=None, method='tSNE', cmap='tab20', figsize
         X = np.concatenate([X, marker], axis=0)
     N = len(labels)
     if X.shape[1] != 2:
+        print(X.shape)
         if method == 'tSNE':
             from sklearn.manifold import TSNE
             X = TSNE(n_components=2, random_state=124).fit_transform(X)

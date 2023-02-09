@@ -1,6 +1,8 @@
 scale/*.pyc
 *.pyc
 *.ipynb_checkpoints
+imputation/SCALE/summaries
+summaries
 scale/__pycache__
 output/
 build/

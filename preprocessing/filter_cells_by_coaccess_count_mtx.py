@@ -36,7 +36,7 @@ def read_coaccesses(prefix, organism):
         chromosomes = list(range(1, 23))
     else:
         chromosomes = list(range(1, 20))
-    chromosomes += ['X', 'Y']
+    chromosomes += ['X'] #, 'Y']
 
     coaccesses = []
     for chromosome in chromosomes:
