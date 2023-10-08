@@ -46,11 +46,11 @@ def get_peaks(args):
 
     return counts.tocsr(), np.array(peaks), np.array(barcodes)
 
-def fit_boruta(counts, peaks, labels):
+def fit_boruta(counts, peaks, labels, percentage=95):
     rf = RandomForestClassifier(n_jobs=-1, class_weight='balanced', max_depth=5)
 
     # define Boruta feature selection method
-    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1)
+    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1, perc=percentage)
 
     feat_selector.fit(counts.toarray(), labels)
     return counts.T[feat_selector.support_], peaks[feat_selector.support_]
@@ -66,6 +66,7 @@ def parse_args():
     parser.add_argument('--labels_path', required=True, help='Path to labels')
     parser.add_argument('--length_deep', type=int, help='Length of coverage in Boruta', default=10000)
     parser.add_argument('--output_folder', required=True, help='Path to output folder')
+    parser.add_argument('--percentage', required=True, type=int, help='Path to parse input data', default=95)
 
     return parser.parse_args()
 
@@ -73,13 +74,13 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     counts, peaks, barcodes = get_peaks(args)
-    labels = pd.read_csv(args.labels_path, sep=' ', header=None)
+    labels = pd.read_csv(args.labels_path, sep='\t', header=None)
 
     barcodes_isin_labels = np.isin(barcodes, labels)
     counts = counts[:, barcodes_isin_labels]
     print(counts.shape)
     matrix_length = counts.shape[0]
-    length_deep = 10000
+    length_deep = args.length_deep
 
     counts_filtered_set = []
     peaks_filtered_set = []
@@ -89,7 +90,12 @@ if __name__ == '__main__':
 
         peaks_submatrix = peaks[index: index + length_deep]
 
-        counts_filtered, peaks_filtered = fit_boruta(count_submatrix.T, peaks_submatrix, labels_columns)
+        counts_filtered, peaks_filtered = fit_boruta(
+            count_submatrix.T,
+            peaks_submatrix,
+            labels_columns,
+            percentage=args.percentage
+        )
 
         counts_filtered_set.append(counts_filtered)
         peaks_filtered_set.append(peaks_filtered)

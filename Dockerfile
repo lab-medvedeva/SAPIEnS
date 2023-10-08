@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime
 
 RUN apt-get update && apt-get install -y python3 python3-dev vim python3-pip
 
@@ -14,9 +14,7 @@ workdir /home/ubuntu
 
 COPY setup.py /home/ubuntu
 COPY requirements.txt /home/ubuntu/requirements.txt
-COPY *.py /home/ubuntu/
-COPY scale /home/ubuntu/scale
-COPY *.sh /home/ubuntu/
+COPY ./imputation/SCALE /home/ubuntu/SCALE
 COPY requirements-cuda.txt /home/ubuntu
 ENV LANG="C.UTF-8"
-RUN cd /home/ubuntu && sudo python3 setup.py install && sudo pip3 install -r requirements-cuda.txt
+RUN cd /home/ubuntu/SCALE && sudo python3 setup.py install && sudo pip3 install -r requirements-cuda.txt
