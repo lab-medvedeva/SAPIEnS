@@ -52,7 +52,7 @@ def get_peaks(folder):
     assert os.path.exists(folder)
 
     peaks_file = os.path.join(folder, 'peaks.txt')
-    counts_file = os.path.join(folder, 'counts.mtx')
+    counts_file = os.path.join(folder, 'matrix.mtx')
     barcodes_file = os.path.join(folder, 'barcodes.txt')
 
     counts = mmread(counts_file)

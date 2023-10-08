@@ -98,6 +98,7 @@ def load_data(path, transpose=False):
     if transpose: 
         count = count.transpose()
     print('Original data contains {} cells x {} peaks'.format(*count.shape))
+    print(len(barcode), len(peaks))
     assert (len(barcode), len(peaks)) == count.shape
     print("Finished loading takes {:.2f} min".format((time.time()-t0)/60))
     return count, peaks, barcode

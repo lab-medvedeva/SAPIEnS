@@ -119,7 +119,7 @@ class VAE(nn.Module):
             name='',
             patience=10,
             outdir='./',
-            plot_iterations=1000
+            plot_iterations=10000
        ):
 
         self.to(device)

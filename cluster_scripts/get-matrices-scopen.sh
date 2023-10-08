@@ -10,4 +10,5 @@
 input=$1
 output=$2
 
+echo $input, $output
 python get_matrices.py --peaks $input/scOpen_peaks.txt --barcodes $input/scOpen_barcodes.txt --format 10x --output_folder $output

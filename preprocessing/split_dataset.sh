@@ -1,3 +1,4 @@
+#!/bin/bash
 input_file=$1
 peaks_prefix=$2
 organism=$3

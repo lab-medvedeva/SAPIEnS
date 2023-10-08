@@ -49,7 +49,7 @@ def get_peaks(args):
     else:
         
         df = pd.read_csv(counts_file, sep='\t', index_col=0)
-
+        print(counts_file, df.shape)
         peaks = list(df.index)
         barcodes = list(df.columns)
 
@@ -59,9 +59,11 @@ def get_peaks(args):
     return counts.tocsr(), np.array(peaks), np.array(barcodes)
 
 
-def get_feature_matrix(counts):
+def get_feature_matrix(counts, num_features=150):
     transformer = TfidfTransformer()
     tf_idf_matrix = transformer.fit_transform(counts.T)
+    if num_features == 0:
+        return tf_idf_matrix
     u, d, vt = svds(tf_idf_matrix, k=150)
     feature_matrix = u @ np.diag(d)
     
@@ -101,6 +103,7 @@ def parse_args():
     parser.add_argument('--labels_path', required=True, help='Path to labels dataset')
     parser.add_argument('--output', required=True, help='Path to output metrics file')
     parser.add_argument('--mode', required=True, choices=('10X', 'dense'))
+    parser.add_argument('--num_features', required=False, help='Number of features for PCA', default=150, type=int)
     return parser.parse_args()
 
 
@@ -138,17 +141,20 @@ def save_embeddings(embeddings, file):
 
 
 def main(args):
+    print(args)
     labels = pd.read_csv(args.labels_path, sep='\t', header=None)
 
     counts, peaks, barcodes = get_peaks(args)
+    print(args.input)
     print(counts.shape)
-    print(peaks[:10])
-    print(labels[0][:10])
+    print(peaks.shape)
+    print(labels.shape)
+    print(barcodes.shape)
 
     barcodes_isin_labels = np.isin(barcodes, labels)
 
     print(labels.shape)
-    feature_matrix = get_feature_matrix(counts[:, barcodes_isin_labels])
+    feature_matrix = get_feature_matrix(counts[:, barcodes_isin_labels], num_features=args.num_features)
     labels_column = labels[1]
     
     num_clusters = len(np.unique(labels_column))
