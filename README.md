@@ -9,6 +9,19 @@
 
 ## Reproducing experiments
 
+We support dense matrix format (TSV-files for count matrices) or sparse matrix format in [MEX](https://kb.10xgenomics.com/hc/en-us/articles/115000794686-How-is-the-MEX-format-used-for-the-gene-barcode-matrices-) format. We provide scripts converting matrices into the MEX format (next - 10X mode).
+
+To convert matrix into the subset folder, please run the following script:
+```
+python subset_matrix.py \
+    --input ../../Datasets/Splenocyte/input \
+    --remain <number of peaks in dataset> \
+    --mode dense \
+    --count_matrix_file <path to name of the count matrix file> \
+    --output ../../Datasets/Splenocyte/output/raw
+```
+
+
 ### Preprocessing steps
 
 Input folder: `preprocessing`
@@ -27,13 +40,13 @@ python subset_matrix.py \
 #### Boruta preprocessing
 ```shell
 python get_boruta_matrix.py \
-    --input ../../Datasets/Splenocyte/input/ \
+    --input ../../Datasets/Splenocyte/raw \
     --peaks_file peaks.txt \
     --barcodes_file barcodes.txt \
     --count_matrix_file matrix.mtx \
     --mode 10X \
     --labels_path ../../Datasets/Splenocyte/input/labels.tsv \
-    --length_deep 1000 
+    --length_deep 1000  \
     --output_folder ../../Datasets/Splenocyte/output/boruta
 ```
 
