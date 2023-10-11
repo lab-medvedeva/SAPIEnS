@@ -6,12 +6,10 @@ from scipy.io import mmwrite
 import numpy as np
 import scipy.sparse
 
+from utils import get_peaks
+
 
 def parse_args():
-    """
-
-    :return: input arguments
-    """
     parser = ArgumentParser('subset sparse matrix')
     parser.add_argument('--input', required=True, help='Path to dataset')
     parser.add_argument('--remain', required=True, help='int number', type=int)
@@ -21,47 +19,6 @@ def parse_args():
     parser.add_argument('--output', help='Path to output folder', required=True)
     parser.add_argument('--mode', help='Name of matrix', choices=('10X', 'dense'))
     return parser.parse_args()
-
-
-def read_array(filename):
-    """
-
-    :param filename: peaks file
-    :return: list of peaks
-    """
-    elements = []
-    with open(filename, 'r') as fp:
-        for line in fp:
-            elements.append(line.strip())
-
-    return elements
-
-
-def get_peaks(args):
-    """
-
-    :param args: read counts file
-    :return: readable format of counts
-    """
-    assert os.path.exists(args.input)
-    print(args.mode)
-    if args.mode == '10X':
-        peaks_file = os.path.join(args.input, args.peaks_file)
-        counts_file = os.path.join(args.input, args.count_matrix_file)
-        barcodes_file = os.path.join(args.input, args.barcodes_file)
-        print(counts_file)
-        barcodes = read_array(barcodes_file)
-        peaks = read_array(peaks_file)
-        counts = mmread(counts_file)
-        print(counts.shape)
-        return counts.T.tocsr(), np.array(peaks), np.array(barcodes)
-    else:
-        counts_file = os.path.join(args.input, args.count_matrix_file)
-
-        counts = pd.read_csv(counts_file, sep='\t', index_col=0)
-        peaks = counts.index
-
-        return counts.values, peaks, counts.columns
 
 
 def main(args):
@@ -75,11 +32,7 @@ def main(args):
     print(counts.shape, peaks.shape)
     sums = np.array(binarized.sum(axis=1))
     if args.mode == '10X':
-        print(sums.shape, 'aaa')
-        print(sums)
         perc = (sums*100.0 /counts.shape[1])[:, 0]
-        print(perc[:10])
-        print('10X', perc.shape)
     else:
         perc = sums * 100 / counts.shape[1]
 

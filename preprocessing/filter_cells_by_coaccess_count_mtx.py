@@ -7,13 +7,21 @@ from scipy.io import mmread, mmwrite
 import numpy as np
 from tqdm import tqdm
 
+from utils import get_peaks
+
+
 def parse_args():
     parser = ArgumentParser('Filter peaks by coaccess')
     parser.add_argument('--prefix', type=str, help='Path to peaks, found by Cicero')
-    parser.add_argument('--folder', type=str, help='Path to folder with data')
-    parser.add_argument('--threshold', type=float, help='Coaccess ratio threshold')
+    parser.add_argument('--input', type=str, help='Path to folder with data')
+    # parser.add_argument('--threshold', type=float, help='Coaccess ratio threshold')
     parser.add_argument('--output', type=str, help='Output path to folder')
     parser.add_argument('--organism', type=str, help='Organism', choices=['mouse', 'human'], default='human')
+    parser.add_argument('--remain', type=int, help='Num peaks to remain', default=50000)
+    parser.set_defaults(mode='10X')
+    parser.set_defaults(peaks_file='peaks.txt')
+    parser.set_defaults(count_matrix_file='matrix.mtx')
+    parser.set_defaults(barcodes_file='barcodes.txt')
     return parser.parse_args()
 
 def read_array(filename):
@@ -48,46 +56,42 @@ def read_coaccesses(prefix, organism):
     return coaccess_df
 
 
-def get_peaks(folder):
-    assert os.path.exists(folder)
+def guess_threshold(coaccess_df: pd.DataFrame, num_remain: int):
+    low_threshold = 0
+    high_threshold = 1
+    low_remain = 0
+    high_remain = len(coaccess_df['Peak1'].unique())
+    while high_remain - low_remain > 1 and high_threshold - low_threshold > 1e-3:
+        mid_threshold = (low_threshold + high_threshold) / 2.0
+        filtered_peak_names = coaccess_df[coaccess_df['coaccess'] > mid_threshold]['Peak1'].unique()
+        mid_remain = len(filtered_peak_names)
+        print(mid_remain, mid_threshold, low_remain, high_remain)
+        if mid_remain > num_remain:
+            low_threshold = mid_threshold
+            low_remain = mid_remain
+        else:
+            high_threshold = mid_threshold
+            high_remain = mid_remain
+    
+    return mid_threshold, filtered_peak_names
 
-    peaks_file = os.path.join(folder, 'peaks.txt')
-    counts_file = os.path.join(folder, 'matrix.mtx')
-    barcodes_file = os.path.join(folder, 'barcodes.txt')
-
-    counts = mmread(counts_file)
-    peaks = read_array(peaks_file)
-    barcodes = read_array(barcodes_file)
-
-    #print(counts.shape, peaks.shape, barcodes.shape)
-
-    peak_idx = counts.row
-    cell_idx = counts.col
-    print(peak_idx)
-    data = counts.data
-
-    #peaks_to_counts = peaks[peak_idx]
-
-    # print(peaks_to_counts.shape)
-    #barcodes_to_counts = barcodes[cell_idx]
-
-    return counts, peaks, barcodes
 
 def main():
     args = parse_args()
 
     coaccess_df = read_coaccesses(args.prefix, args.organism)
 
-    filtered_peak_names = coaccess_df[coaccess_df['coaccess'] > args.threshold]['Peak1'].unique()
+    threshold, filtered_peak_names = guess_threshold(coaccess_df, args.remain)
 
-    print(len(filtered_peak_names), 'remained after', args.threshold)
+    print(len(filtered_peak_names), 'remained after', threshold)
 
-    counts, peaks, barcodes = get_peaks(args.folder)
+    counts, peaks, barcodes = get_peaks(args)
 
     peak_names_dict = {
         peak: index for index, peak in enumerate(peaks)            
     }
     filtered_peak_idx = sorted([peak_names_dict[peak] for peak in filtered_peak_names])
+    print(counts.shape, len(peaks), len(barcodes))
     print(filtered_peak_idx[:10])
 
     counts_matrix = sparse.csr_matrix(counts)[filtered_peak_idx]

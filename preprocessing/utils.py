@@ -35,7 +35,10 @@ def get_peaks(args):
         peaks = read_array(peaks_file)
         counts = mmread(counts_file)
         print(counts.shape)
-        return counts.T.tocsr(), np.array(peaks), np.array(barcodes)
+        if len(peaks) !=  counts.shape[0]:
+            counts = counts.T
+        print(counts.shape)
+        return counts.tocsr(), np.array(peaks), np.array(barcodes)
     else:
         counts_file = os.path.join(args.input, args.count_matrix_file)
 

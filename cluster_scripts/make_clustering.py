@@ -64,7 +64,7 @@ def get_feature_matrix(counts, num_features=150):
     tf_idf_matrix = transformer.fit_transform(counts.T)
     if num_features == 0:
         return tf_idf_matrix
-    u, d, vt = svds(tf_idf_matrix, k=150)
+    u, d, vt = svds(tf_idf_matrix, k=num_features)
     feature_matrix = u @ np.diag(d)
     
     return feature_matrix

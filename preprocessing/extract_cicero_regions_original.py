@@ -15,6 +15,9 @@ def parse_args():
     parser = ArgumentParser('Extract peaks for Cicero')
     parser.add_argument('--folder', type=str, help='Path to folder with peaks, barcodes, count')
     parser.add_argument('--output', type=str, help='Path to output tsv file')
+    parser.add_argument('--peaks_file', help='Name of peaks_file', default='peaks.txt')
+    parser.add_argument('--barcodes_file', help='Name of barcodes file', default='barcodes.txt')
+    parser.add_argument('--count_matrix_file', help='Name of count matrix file', default='matrix.mtx')
 
     return parser.parse_args()
 
@@ -28,18 +31,22 @@ def read_array(filename):
     return elements
 
 
-def get_peaks(folder):
+def get_peaks(folder, args):
     assert os.path.exists(folder)
 
-    peaks_file = os.path.join(folder, 'peaks.txt')
-    counts_file = os.path.join(folder, 'counts.mtx')
-    barcodes_file = os.path.join(folder, 'barcodes.txt')
+    peaks_file = os.path.join(folder, args.peaks_file)
+    counts_file = os.path.join(folder, args.count_matrix_file)
+    barcodes_file = os.path.join(folder, args.barcodes_file)
 
-    counts = mmread(counts_file)
     peaks = read_array(peaks_file)
     barcodes = read_array(barcodes_file)
 
-    #print(counts.shape, peaks.shape, barcodes.shape)
+    counts = mmread(counts_file)
+    
+    if counts.shape[0] != len(peaks):
+        counts = counts.T
+    
+    print(counts.shape, len(peaks), len(barcodes))
 
     peak_idx = counts.row
     cell_idx = counts.col
@@ -58,7 +65,7 @@ def get_peaks(folder):
 
 def process_peaks(args):
     
-    counts, peaks, barcodes = get_peaks(args.folder)
+    counts, peaks, barcodes = get_peaks(args.folder, args)
 
     peak_idx = counts.row
     cell_idx = counts.col

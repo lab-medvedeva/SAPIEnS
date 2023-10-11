@@ -14,7 +14,9 @@ input=$1
 labels=$2
 output=$3
 experiment_name=$4
-num_clusters=$5
+#num_clusters=$5
+
+num_clusters=$(cat $labels | awk '{ print $2 }' | sort | uniq | wc -l)
 mkdir -p $output
 
 python SCALE.py -d $input --latent 10 \

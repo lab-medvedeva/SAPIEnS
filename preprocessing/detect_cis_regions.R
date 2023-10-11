@@ -31,6 +31,6 @@ sample_genome <- subset(genome, V1 == CHROMOSOME)
 conns <- run_cicero(cicero_cds, sample_genome)
 
 
-filtered_data <- subset(conns, conns$coaccess > 0.05)
+filtered_data <- subset(conns, conns$coaccess > 0.001)
 
 write.csv(filtered_data, paste(OUTPUT, CHROMOSOME, '.csv', sep=''), row.names = FALSE)
