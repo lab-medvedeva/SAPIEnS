@@ -14,11 +14,11 @@ We support dense matrix format (TSV-files for count matrices) or sparse matrix f
 To convert matrix into the subset folder, please run the following script:
 ```
 python subset_matrix.py \
-    --input ../../Datasets/Splenocyte/input \
+    --input ../../Datasets/PBMC5K/input \
     --remain <number of peaks in dataset> \
     --mode dense \
     --count_matrix_file <path to name of the count matrix file> \
-    --output ../../Datasets/Splenocyte/output/raw
+    --output ../../Datasets/PBMC5K/output/raw
 ```
 
 
@@ -26,28 +26,38 @@ python subset_matrix.py \
 
 Input folder: `preprocessing`
 
+#### Subsampling method
+
+```shell
+python subsample_matrix.py \
+    --input ../../Datasets/PBMC5K/input \
+    --sample_ratio 0.2 \
+    --mode 10X \
+    --output ../../Datasets/PBMC5K/samples/0.2
+```
+
 #### Threshold method
 
 ```shell
 python subset_matrix.py \
-    --input ../../Datasets/Splenocyte/input \
-    --remain 100000 \
+    --input ../../Datasets/PBMC5K/input \
+    --remain 50000 \
     --mode 10X \
     --count_matrix_file matrix.mtx \
-    --output ../../Datasets/Splenocyte/output/threshold
+    --output ../../Datasets/PBMC5K/output/threshold
 ```
 
 #### Boruta preprocessing
 ```shell
 python get_boruta_matrix.py \
-    --input ../../Datasets/Splenocyte/raw \
+    --input ../../Datasets/PBMC5K/raw \
     --peaks_file peaks.txt \
     --barcodes_file barcodes.txt \
     --count_matrix_file matrix.mtx \
     --mode 10X \
-    --labels_path ../../Datasets/Splenocyte/input/labels.tsv \
+    --labels_path ../../Datasets/PBMC5K/input/labels.tsv \
     --length_deep 1000  \
-    --output_folder ../../Datasets/Splenocyte/output/boruta
+    --output_folder ../../Datasets/PBMC5K/output/boruta
 ```
 
 
@@ -55,7 +65,7 @@ python get_boruta_matrix.py \
 
 ```shell
 python extract_cicero_regions_original.py \
-    --folder ../../Datasets/Splenocyte/output/raw \
-    --output ../../Datasets/Splenocyte/output/cicero/peaks_dumped.tsv
+    --folder ../../Datasets/PBMC5K/output/raw \
+    --output ../../Datasets/PBMC5K/output/cicero/peaks_dumped.tsv
 ```
 
