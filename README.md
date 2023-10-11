@@ -21,20 +21,51 @@ python subset_matrix.py \
     --output ../../Datasets/PBMC5K/output/raw
 ```
 
+## Input folders structure
+
+```
+input
+├── barcodes.txt
+├── labels.tsv
+├── matrix.mtx
+└── peaks.txt
+```
+
+The structure of Labels file:
+* Tab-separated file
+* Contains two columns:
+  * Cell id
+  * Cell type
+
+The structure of barcodes, peaks, and labels files follows 10X structure. We designed to accept any types of prefixes using the following options:
+```
+--peaks_file - path to peaks file (barcodes.txt)
+--count_matrix_file - path to count matrix file (matrix.mtx)
+--peaks_file - path to count peaks file (peaks.txt)
+```
+
+## Output folders
+
+```
+output
+├── boruta
+├── cicero
+├── raw
+├── scale_boruta
+├── scale_cicero
+├── scale_threshold
+├── scopen_boruta
+├── scopen_cicero
+├── scopen_threshold
+└── threshold
+```
+
+These folders are needed to generate metrics evaluation.
 
 ### Preprocessing steps
 
 Input folder: `preprocessing`
 
-#### Subsampling method
-
-```shell
-python subsample_matrix.py \
-    --input ../../Datasets/PBMC5K/input \
-    --sample_ratio 0.2 \
-    --mode 10X \
-    --output ../../Datasets/PBMC5K/samples/0.2
-```
 
 #### Threshold method
 
@@ -67,5 +98,15 @@ python get_boruta_matrix.py \
 python extract_cicero_regions_original.py \
     --folder ../../Datasets/PBMC5K/output/raw \
     --output ../../Datasets/PBMC5K/output/cicero/peaks_dumped.tsv
+```
+
+#### Subsampling method (for ablation study)
+
+```shell
+python subsample_matrix.py \
+    --input ../../Datasets/PBMC5K/input \
+    --sample_ratio 0.2 \
+    --mode 10X \
+    --output ../../Datasets/PBMC5K/samples/0.2/output/raw
 ```
 
