@@ -81,7 +81,7 @@ python subset_matrix.py \
 #### Boruta preprocessing
 ```shell
 python get_boruta_matrix.py \
-    --input ../../Datasets/PBMC5K/raw \
+    --input ../../Datasets/PBMC5K/output/raw \
     --peaks_file peaks.txt \
     --barcodes_file barcodes.txt \
     --count_matrix_file matrix.mtx \
@@ -95,10 +95,9 @@ python get_boruta_matrix.py \
 #### Cicero preprocessing
 
 ```shell
-python extract_cicero_regions_original.py \
-    --folder ../../Datasets/PBMC5K/output/raw \
-    --output ../../Datasets/PBMC5K/output/cicero/peaks_dumped.tsv
+./run_cicero_pipeline.sh ../../Datasets/PBMC5K/output human 50000
 ```
+It takes input folder and selects peaks for datasets.
 
 #### Subsampling method (for ablation study)
 
@@ -110,3 +109,35 @@ python subsample_matrix.py \
     --output ../../Datasets/PBMC5K/samples/0.2/output/raw
 ```
 
+## Imputation methods
+Folder: [imputation](/imputation)
+
+### scOpen
+
+Full datasets:
+```
+./02_run_scopen_full.sh PBMC5K
+```
+Subsampled datasets:
+```
+02_run_scopen_subsampled.sh PBMC5K
+```
+
+### Clustering analysis
+
+Get clustering metrics
+```
+python3 make_clustering.py 
+```
+
+### Footprinting analysis
+
+Folder [footprinting](/footprinting)
+```shell
+./footprinting_atlas_full_dataset.sh \
+    --dump_folder ../../Datasets/HSC/footprinting/threshold \
+    --scale_output ../../Datasets/GSE96769/output/threshold
+    --iteration 0 --cell_types ../cell_types_hema.txt \
+    --organism hg19 \
+    --filter --bams <path to bams file>
+```
