@@ -7,7 +7,7 @@ import pandas as pd
 from boruta import BorutaPy
 from sklearn.ensemble import RandomForestClassifier
 import scipy.sparse
-
+from utils import get_peaks
 
 def read_array(filename):
     elements = []
@@ -17,34 +17,6 @@ def read_array(filename):
 
     return elements
 
-
-def get_peaks(args):
-    assert os.path.exists(args.input)
-
-    counts_file = os.path.join(args.input, args.count_matrix_file)
-
-    if args.mode == '10X':
-        peaks_file = os.path.join(args.input, args.peaks_file)
-        barcodes_file = os.path.join(args.input, args.barcodes_file)
-
-        counts = mmread(counts_file)
-        peaks = read_array(peaks_file)
-        barcodes = read_array(barcodes_file)
-
-
-        peak_idx = counts.row
-        cell_idx = counts.col
-    else:
-
-        df = pd.read_csv(counts_file, sep='\t', index_col=0)
-
-        peaks = list(df.index)
-        barcodes = list(df.columns)
-
-        counts = scipy.sparse.csr_matrix(df.values)
-
-
-    return counts.tocsr(), np.array(peaks), np.array(barcodes)
 
 def fit_boruta(counts, peaks, labels, percentage=95):
     rf = RandomForestClassifier(n_jobs=-1, class_weight='balanced', max_depth=5)
@@ -73,6 +45,8 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    print(args)
+    print('Reading peaks')
     counts, peaks, barcodes = get_peaks(args)
     labels = pd.read_csv(args.labels_path, sep='\t', header=None)
 

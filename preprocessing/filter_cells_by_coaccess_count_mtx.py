@@ -61,18 +61,19 @@ def guess_threshold(coaccess_df: pd.DataFrame, num_remain: int):
     high_threshold = 1
     low_remain = 0
     high_remain = len(coaccess_df['Peak1'].unique())
-    while high_remain - low_remain > 1 and high_threshold - low_threshold > 1e-3:
+    while high_remain - low_remain > 1 and high_threshold - low_threshold > 1e-5:
         mid_threshold = (low_threshold + high_threshold) / 2.0
         filtered_peak_names = coaccess_df[coaccess_df['coaccess'] > mid_threshold]['Peak1'].unique()
         mid_remain = len(filtered_peak_names)
-        print(mid_remain, mid_threshold, low_remain, high_remain)
+        print(low_threshold, mid_threshold, high_threshold, low_remain, mid_remain, high_remain)
         if mid_remain > num_remain:
             low_threshold = mid_threshold
-            low_remain = mid_remain
+            high_remain = mid_remain
         else:
             high_threshold = mid_threshold
-            high_remain = mid_remain
-    
+            low_remain = mid_remain
+
+    print(low_threshold, mid_threshold, high_threshold, low_remain, mid_remain, high_remain) 
     return mid_threshold, filtered_peak_names
 
 
