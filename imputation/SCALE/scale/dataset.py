@@ -108,7 +108,7 @@ def read_mtx(path):
     for filename in glob(path+'/*'):
         basename = os.path.basename(filename)
         if (('count' in basename) or ('matrix' in basename)) and ('mtx' in basename):
-            count = mmread(filename).T.todense().astype('float32')
+            count = np.asarray(mmread(filename).T.todense().astype('float32'))
         elif 'barcode' in basename:
             barcode = pd.read_csv(filename, sep='\t', header=None)[0].values
         elif 'gene' in basename or 'peak' in basename:

@@ -12,10 +12,10 @@ do
        --input ../../Datasets/PBMC5K/input \
        --sample_ratio $point_ratio \
        --mode 10X \
-       --output ../../Datasets/PBMC5K/samples/$point_ratio/raw
+       --output ../../Datasets/PBMC5K/samples/$point_ratio/output/raw
 
     python subset_matrix.py \
-      --input ../../Datasets/PBMC5K/samples/$point_ratio/raw \
+      --input ../../Datasets/PBMC5K/samples/$point_ratio/output/raw \
       --remain 50000 \
       --mode 10X \
       --output ../../Datasets/PBMC5K/samples/$point_ratio/output/threshold

@@ -1,0 +1,5 @@
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages("BiocManager")
+#BiocManager::install(version = "3.14", ask = FALSE)
+#BiocManager::install()
+BiocManager::install("cicero")

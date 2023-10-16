@@ -6,3 +6,4 @@ summaries
 scale/__pycache__
 output/
 build/
+*.out

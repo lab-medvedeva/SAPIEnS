@@ -82,6 +82,7 @@ def process_peaks(args):
 
 def main():
     args = parse_args()
+    print(args)
     process_peaks(args)
 
 

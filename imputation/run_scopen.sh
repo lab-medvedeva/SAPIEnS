@@ -12,3 +12,4 @@ output=$3
 mkdir -p $output
 
 scopen --input $input --input_format $mode --output_dir $output --output_prefix scOpen --output_format 10X --verbose 1  --estimate_rank --nc 24
+bash get-matrices-scopen.sh $output $output/matrices
