@@ -8,6 +8,8 @@ from boruta import BorutaPy
 from sklearn.ensemble import RandomForestClassifier
 import scipy.sparse
 from utils import get_peaks
+import sys
+
 
 def read_array(filename):
     elements = []
@@ -19,7 +21,7 @@ def read_array(filename):
 
 
 def fit_boruta(counts, peaks, labels, percentage=95):
-    rf = RandomForestClassifier(n_jobs=-1, class_weight='balanced', max_depth=5)
+    rf = RandomForestClassifier(n_jobs=32, class_weight='balanced', max_depth=5)
 
     # define Boruta feature selection method
     feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1, perc=percentage)
@@ -59,6 +61,8 @@ if __name__ == '__main__':
     counts_filtered_set = []
     peaks_filtered_set = []
     labels_columns = labels[1]
+    sys.stdout.flush()
+    sys.stderr.flush()
     for index in range(0, matrix_length, length_deep):
         count_submatrix = counts[index: index + length_deep]
 
@@ -73,6 +77,8 @@ if __name__ == '__main__':
 
         counts_filtered_set.append(counts_filtered)
         peaks_filtered_set.append(peaks_filtered)
+        sys.stdout.flush()
+        sys.stderr.flush()
 
     counts_boruta = scipy.sparse.vstack(counts_filtered_set)
     peaks_boruta = np.concatenate(peaks_filtered_set)

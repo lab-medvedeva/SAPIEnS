@@ -13,6 +13,7 @@ input=$1
 labels=$2
 output=$3
 experiment_name=$4
+gpu_id=$5
 #num_clusters=$5
 
 export HOME=/mnt/flashgpu/lab2
@@ -20,7 +21,7 @@ export HOME=/mnt/flashgpu/lab2
 num_clusters=$(cat $labels | awk '{ print $2 }' | sort | uniq | wc -l)
 mkdir -p $output
 
-CUDA_VISIBLE_DEVICES=1 python SCALE.py -d $input --latent 10 \
+CUDA_VISIBLE_DEVICES=${gpu_id} python SCALE.py -d $input --latent 10 \
 	-o $output --min_peaks 1 -x 0 \
 	-r $labels  -k $num_clusters --max_iter 100000 --impute_iteration 10000 \
 	--reference_type atlas --peak_save imputed \

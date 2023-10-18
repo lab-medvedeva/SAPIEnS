@@ -17,12 +17,14 @@ do
     if [ $result -eq 0 ] 
     then
 	echo "Sbatch found. Running pipeline on cluster"
-	sbatch run_scopen.sh $DEFAULT_FOLDER/cicero 10X $DEFAULT_FOLDER/scopen_cicero
-	sbatch run_scopen.sh $DEFAULT_FOLDER/threshold 10X $DEFAULT_FOLDER/scopen_threshold
+	#sbatch run_scopen.sh $DEFAULT_FOLDER/cicero 10X $DEFAULT_FOLDER/scopen_cicero
+	#sbatch run_scopen.sh $DEFAULT_FOLDER/threshold 10X $DEFAULT_FOLDER/scopen_threshold
+	sbatch run_scopen.sh $DEFAULT_FOLDER/boruta 10X $DEFAULT_FOLDER/scopen_boruta
     else
 	echo "Sbatch not found. Please, notify your users about hard tasks. In 10 seconds it will start"
 	sleep 10
-	bash run_scopen.sh $DEFAULT_FOLDER/cicero 10X $DEFAULT_FOLDER/scopen_cicero
-	bash run_scopen.sh $DEFAULT_FOLDER/threshold 10X $DEFAULT_FOLDER/scopen_threshold
+	#bash run_scopen.sh $DEFAULT_FOLDER/cicero 10X $DEFAULT_FOLDER/scopen_cicero
+	#bash run_scopen.sh $DEFAULT_FOLDER/threshold 10X $DEFAULT_FOLDER/scopen_threshold
+	bash run_scopen.sh $DEFAULT_FOLDER/boruta 10X $DEFAULT_FOLDER/scopen_boruta
     fi
 done
