@@ -58,7 +58,7 @@ def collect_metrics_raw(args):
         print(method)
 
         input_path = f'{args.input}/clustering/{method}/metrics.json'
-        assert os.path.exists(input_path), f'No metrics found for {method}. Please, make clustering'
+        assert os.path.exists(input_path), f'No metrics found for {method} at {input_path}. Please, make clustering'
         df_melt_new = get_metrics_from_json(f'{args.input}/clustering/{method}/metrics.json')
         print(df_melt_new.head())
         df_melt_new['method'] = method # set method here
@@ -135,6 +135,7 @@ def collect_metrics_scopen(args):
 
 
 def main(args):
+    os.makedirs(args.output, exist_ok=True)
     collect_metrics_raw(args)
     collect_metrics_scale(args)
     collect_metrics_scopen(args)

@@ -7,7 +7,6 @@
 sbatch_command=$(sbatch --help)
 result=$?
 
-dataset_path=$1
 for sample_ratio in $(seq 0.2 0.2 1.0)
 do
     point_ratio=$(echo $sample_ratio | sed 's/,/\./')
@@ -15,10 +14,10 @@ do
     if [ $result -eq 0 ] 
     then
 	echo "Sbatch found. Running pipeline on cluster"
-	sbatch run_cicero_pipeline.sh $dataset_path/samples/$point_ratio/output human 50000
+	sbatch run_boruta.sh $dataset/samples/$point_ratio/output
     else
 	echo "Sbatch not found. Please, notify your users about hard tasks. In 10 seconds it will start"
 	sleep 10
-    	./run_cicero_pipeline.sh $dataset_path/samples/$point_ratio/output human 50000
+    	./run_boruta.sh $dataset/samples/$point_ratio/output
     fi
 done

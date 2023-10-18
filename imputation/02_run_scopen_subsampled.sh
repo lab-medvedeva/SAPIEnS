@@ -7,12 +7,12 @@
 sbatch_command=$(sbatch --help)
 result=$?
 
-dataset=PBMC5K
-for sample_ratio in $(seq 0.2 0.2 0.8)
+dataset_path=$1
+for sample_ratio in $(seq 0.2 0.2 1.0)
 do
     point_ratio=$(echo $sample_ratio | sed 's/,/\./')
 
-    DEFAULT_FOLDER=../../Datasets/$dataset/samples/$point_ratio/output
+    DEFAULT_FOLDER=${dataset_path}/samples/$point_ratio/output
     echo $point_ratio
     if [ $result -eq 0 ] 
     then

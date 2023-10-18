@@ -26,4 +26,4 @@ CUDA_VISIBLE_DEVICES=${gpu_id} python SCALE.py -d $input --latent 10 \
 	-r $labels  -k $num_clusters --max_iter 100000 --impute_iteration 10000 \
 	--reference_type atlas --peak_save imputed \
 	--experiment_name $experiment_name \
-     	--encode_dim 1600 600 300 100 --lr 0.001
+    --encode_dim 1600 600 300 100 --lr 0.001
