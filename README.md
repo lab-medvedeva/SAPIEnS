@@ -125,10 +125,112 @@ Subsampled datasets:
 
 ### Clustering analysis
 
-Get clustering metrics
+Input folder: [clustering](/clustering).
+
+Processing datasets:
 ```
-python3 make_clustering.py 
+./run_all_clustering_sbatch.sh ../../Datasets/PBMC5K/ ../../Datasets/PBMC5K/input/labels.tsv
 ```
+
+Script will check whether `sbatch` is available. If you do not have sbatch, you will be notified that script will be executed in 10 seconds!
+
+After collecting the results the folder `clustering` should be generated with contents:
+
+```shell
+./clustering/
+|-- boruta
+|-- cicero
+|-- scale_boruta
+|-- scale_cicero
+|-- scale_threshold
+|-- scopen_boruta
+|-- scopen_cicero
+|-- scopen_threshold
+`-- threshold
+```
+
+For each folder you will be found two files:
+* `metrics.json` - JSON document containing 12 metrics
+* `metrics.pkl` - Pickle-formatted values containing PCA, tSNE and UMAP scatterplots for visualization.
+
+For `scale` method the folder will contain:
+
+```shell
+clustering/scale_boruta/
+|-- 10000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 100000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 20000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 30000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 40000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 50000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 60000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 70000
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- 80000
+|   |-- metrics.json
+|   `-- metrics.pkl
+`-- 90000
+    |-- metrics.json
+    `-- metrics.pkl
+```
+
+For scOpen method folder structure will be generated:
+```shell
+clustering/scopen_boruta/
+|-- matrix_0.0
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.1
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.2
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.3
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.4
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.5
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.6
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.7
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.8
+|   |-- metrics.json
+|   `-- metrics.pkl
+|-- matrix_0.9
+|   |-- metrics.json
+|   `-- metrics.pkl
+`-- matrix_1.0
+```
+
+#### Get clustering metrics
+```
+python3 collect_metrics.py --input ../../Datasets/PBMC5K/ --output ../../Datasets/PBMC5K/output_metrics
+```
+
+
 
 ### Footprinting analysis
 
