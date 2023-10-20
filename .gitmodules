@@ -1,0 +1,3 @@
+[submodule "imputation/scopen"]
+	path = imputation/scopen
+	url = https://github.com/lab-medvedeva/scopen.git
