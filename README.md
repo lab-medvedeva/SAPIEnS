@@ -7,6 +7,47 @@
 * R 4.3.0 for running Cicero
 * CUDA 11.0+
 
+## Installation steps
+
+We represent three options for you to install evaluation system.
+
+### Option 1. Docker images
+We prepared Docker images to run evaluation system in Docker. Please, complete this steps using Docker images. CPU version:
+```
+docker pull akhtyamovpavel/sapiens:cpu
+docker run -v <full path to datasets>:/home/ubuntu/Datasets --name sapiens -it -d akhtyamovpavel akhtyamovpavel/sapiens:cpu bash
+```
+GPU version (SCALE supported)
+```
+docker pull akhtyamovpavel/sapiens:gpu
+docker run -v <full path to datasets>:/home/ubuntu/Datasets --name sapiens -it -d akhtyamovpavel akhtyamovpavel/sapiens:gpu bash
+```
+
+### Option 2. Installation using conda + pip
+
+1. Install Miniconda using this [link](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html)
+2. Create environment:
+```
+conda create -n sapiens python=3.10 r-base=4.3.0
+```
+3. Activate environment:
+```
+conda activate sapiens
+```
+4. Install packages in your environment:
+```
+pip install -r requirements.txt
+```
+5. (GPU required) Install pytorch for your environment:
+```
+pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
+```
+6. Install Cicero:
+```
+Rscript install.R
+```
+
+
 ## Reproducing experiments
 
 We support dense matrix format (TSV-files for count matrices) or sparse matrix format in [MEX](https://kb.10xgenomics.com/hc/en-us/articles/115000794686-How-is-the-MEX-format-used-for-the-gene-barcode-matrices-) format. We provide scripts converting matrices into the MEX format (next - 10X mode).
