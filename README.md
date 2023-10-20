@@ -32,7 +32,7 @@ docker run -v <full path to datasets>:/home/ubuntu/Datasets --name sapiens -it -
 2. GPU version:
 ```
 docker build -f Dockerfile -t lab-medvedeva/sapiens:gpu .
-docker run --gpus all --shm-size 10G -v <full path to datasets>:/home/ubuntu/Datasets --name sapiens -it -d akhtyamovpavel akhtyamovpavel/sapiens:gpu bash
+docker run --gpus all --shm-size 10G -v <full path to datasets>:/home/ubuntu/Datasets --name sapiens -it -d akhtyamovpavel/sapiens:gpu bash
 ```
 
 ### Option 2. Installation using conda + pip
