@@ -40,7 +40,7 @@ docker run --gpus all --shm-size 10G -v <full path to datasets>:/home/ubuntu/Dat
 1. Install Miniconda using this [link](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html)
 2. Create environment:
 ```
-conda create -n sapiens python=3.10 r-base=4.3.0
+conda create -n sapiens -c conda-forge python=3.10 r-base=4.3.0
 ```
 3. Activate environment:
 ```
