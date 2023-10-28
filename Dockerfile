@@ -1,6 +1,6 @@
 FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime
 
-RUN apt-get install -y zlib1g zlib1g-dev
+RUN apt-get install -y zlib1g zlib1g-dev libxml2-dev libssl-dev
 RUN apt-get install -y sudo
 
 RUN apt-get install -y llvm
