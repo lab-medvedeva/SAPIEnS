@@ -1,0 +1,13 @@
+index,cols,vals,Metric,method
+90000,distance_pca,0.12774578779419904,distance_pca,scale_cicero
+90000,distance_tsne,-0.04260532930493355,distance_tsne,scale_cicero
+90000,distance_umap,0.059191010892391205,distance_umap,scale_cicero
+90000,hc_ari,0.37369652266858033,hc_ari,scale_cicero
+90000,hc_ami,0.6739594007329572,hc_ami,scale_cicero
+90000,hc_homogeneity,0.7158370090407444,hc_homogeneity,scale_cicero
+90000,kmeans_ari,0.3784351424154216,kmeans_ari,scale_cicero
+90000,kmeans_ami,0.672120636848212,kmeans_ami,scale_cicero
+90000,kmeans_homogeneity,0.7120834917153094,kmeans_homogeneity,scale_cicero
+90000,louvain_ari,0.3912734408234758,louvain_ari,scale_cicero
+90000,louvain_ami,0.6935997187177898,louvain_ami,scale_cicero
+90000,louvain_homogeneity,0.7387414499238858,louvain_homogeneity,scale_cicero

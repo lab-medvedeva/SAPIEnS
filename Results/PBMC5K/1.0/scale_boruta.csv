@@ -1,0 +1,13 @@
+index,cols,vals,Metric,method
+100000,distance_pca,0.16702362761356818,distance_pca,scale_boruta
+100000,distance_tsne,0.13252970576286316,distance_tsne,scale_boruta
+100000,distance_umap,0.24705402553081512,distance_umap,scale_boruta
+100000,hc_ari,0.55636611018413,hc_ari,scale_boruta
+100000,hc_ami,0.7018543684970723,hc_ami,scale_boruta
+100000,hc_homogeneity,0.7175377234160789,hc_homogeneity,scale_boruta
+100000,kmeans_ari,0.5627156523179146,kmeans_ari,scale_boruta
+100000,kmeans_ami,0.7038923452385333,kmeans_ami,scale_boruta
+100000,kmeans_homogeneity,0.7218658638038578,kmeans_homogeneity,scale_boruta
+100000,louvain_ari,0.5294140324141237,louvain_ari,scale_boruta
+100000,louvain_ami,0.686694714464779,louvain_ami,scale_boruta
+100000,louvain_homogeneity,0.71423028371302,louvain_homogeneity,scale_boruta

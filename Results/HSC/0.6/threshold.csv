@@ -1,0 +1,13 @@
+index,cols,vals,Metric,method
+threshold,distance_pca,0.012820407163295664,distance_pca,threshold
+threshold,distance_tsne,0.09166428446769714,distance_tsne,threshold
+threshold,distance_umap,0.16959865391254425,distance_umap,threshold
+threshold,hc_ari,0.28049479768083624,hc_ari,threshold
+threshold,hc_ami,0.48881969807317244,hc_ami,threshold
+threshold,hc_homogeneity,0.5046081724834917,hc_homogeneity,threshold
+threshold,kmeans_ari,0.2961642009519382,kmeans_ari,threshold
+threshold,kmeans_ami,0.4936028373441691,kmeans_ami,threshold
+threshold,kmeans_homogeneity,0.5223077624573231,kmeans_homogeneity,threshold
+threshold,louvain_ari,0.4451013868778739,louvain_ari,threshold
+threshold,louvain_ami,0.6255385059587614,louvain_ami,threshold
+threshold,louvain_homogeneity,0.6339392292904814,louvain_homogeneity,threshold
